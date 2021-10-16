@@ -1,0 +1,107 @@
+scalar JSON
+scalar Void
+scalar Date
+
+type User {
+    id: Int!
+    createdAt: Date!
+    modifiedAt: Date!
+    email: String!
+}
+
+type Category {
+    id: Int!
+    createdAt: Date!
+    modifiedAt: Date!
+    name: String!
+    users: [UserCategory!]!
+}
+
+type UserCategory {
+    id: Int!
+    createdAt: Date!
+    modifiedAt: Date!
+    user: User!
+    active: Boolean!
+    admin: Boolean!
+}
+
+type Bookmark {
+    id: Int!
+    createdAt: Date!
+    modifiedAt: Date!
+    url: String!
+    title: String!
+    description: String
+    categoryId: Int!
+    tags: [Tag!]!
+    category: Category!
+    # aliases: [BookmarkAlias!]!
+}
+
+type BookmarkAlias {
+    id: Int!
+    createdAt: Date!
+    modifiedAt: Date!
+    pattern: String!
+    bookmark: Bookmark!
+}
+
+type Tag {
+    id: Int!
+    createdAt: Date!
+    modifiedAt: Date!
+    name: String!
+    category: Category!
+    bookmark: Bookmark!
+    createdById: Int!
+    createdBy: User!
+    categoryId: Int!
+    createdByCurrentUser: Boolean!
+}
+
+type Query {
+    users(categoryId: Int!): [UserCategory!]!
+    categories(take: Int, skip: Int): [Category!]!
+    category(id: Int!): Category
+    bookmarks(
+        categoryId: Int!
+        where: JSON
+        take: Int
+        skip: Int
+        orderBy: JSON
+    ): [Bookmark!]!
+    tags(categoryId: Int!, where: JSON, take: Int, skip: Int): [Tag!]!
+    isBookmarked(url: String!): Boolean
+    bookmarksForUrl(url: String!): [Bookmark!]!
+    bookmark(id: Int!): Bookmark
+}
+
+input CreateBookmarkContent {
+    categoryId: Int!
+    title: String!
+    url: String!
+    description: String
+    tags: [String!]
+}
+
+input UpdateBookmarkContent {
+    title: String
+    url: String
+    description: String
+    tags: [String!]
+}
+
+type Mutation {
+    addCategory(name: String!): Category
+    leaveCategory(id: Int!): Void
+    addUsers(categoryId: Int!, emails: [String!]!): Void
+    removeUser(categoryId: Int!, id: Int!): Void
+    addBookmark(input: CreateBookmarkContent!): Bookmark
+    updateBookmark(bookmarkId: Int!, input: UpdateBookmarkContent!): Void
+    removeBookmark(id: Int!): Void
+    addTag(bookmarkId: Int!, name: String!): Void
+    removeTag(bookmarkId: Int!, name: String!): Void
+    batchUpdateHostName(categoryId: Int!, oldName: String!, newName: String!): Void
+    login(email: String!, password: String!): String!
+}

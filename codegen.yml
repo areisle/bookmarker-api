@@ -1,0 +1,11 @@
+overwrite: true
+schema: "src/schema.graphql"
+documents: null
+generates:
+  src/generated/index.ts:
+    plugins:
+      - "typescript"
+      - "typescript-resolvers"
+    config:
+      resolverTypeWrapperSignature:  "T extends Record<string, any> ? (Promise<Partial<T>> | Partial<T>) : T"
+      contextType: './utilities#RequestContext'
