@@ -1,0 +1,99 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider        = "prisma-client-js"
+    previewFeatures = ["interactiveTransactions"]
+}
+
+model User {
+    id                    Int            @id @default(autoincrement())
+    createdAt             DateTime       @default(now())
+    modifiedAt            DateTime       @updatedAt
+    email                 String         @unique
+    categories            UserCategory[]
+    tags                  Tag[]
+    password              String?
+    resetToken            String?
+    resetRequestExpiresAt DateTime?
+}
+
+model Category {
+    id              Int                    @id @default(autoincrement())
+    createdAt       DateTime               @default(now())
+    modifiedAt      DateTime               @updatedAt
+    name            String
+    users           UserCategory[]
+    bookmarks       Bookmark[]
+    tags            Tag[]
+    bookmarkAliases CategoryPatternAlias[]
+}
+
+model CategoryPatternAlias {
+    id         Int      @id @default(autoincrement())
+    createdAt  DateTime @default(now())
+    modifiedAt DateTime @updatedAt
+    categoryId Int
+    category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    match      String
+    canonical  String
+    origin     String
+}
+
+model UserCategory {
+    id         Int      @id @default(autoincrement())
+    createdAt  DateTime @default(now())
+    modifiedAt DateTime @updatedAt
+    userId     Int
+    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    categoryId Int
+    category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    active     Boolean  @default(false)
+    admin      Boolean  @default(false)
+
+    @@unique([userId, categoryId])
+}
+
+model Bookmark {
+    id          Int             @id @default(autoincrement())
+    createdAt   DateTime        @default(now())
+    modifiedAt  DateTime        @updatedAt
+    url         String
+    title       String
+    description String?
+    categoryId  Int
+    category    Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    tags        Tag[]
+    aliases     BookmarkAlias[]
+
+    @@index([url])
+}
+
+model BookmarkAlias {
+    id         Int      @id @default(autoincrement())
+    createdAt  DateTime @default(now())
+    url        String
+    bookmarkId Int
+    bookmark   Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+
+    @@unique([bookmarkId, url])
+}
+
+model Tag {
+    id          Int      @id @default(autoincrement())
+    createdAt   DateTime @default(now())
+    name        String
+    // included for convenience. could be gotten from bookmakr
+    categoryId  Int
+    category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    bookmarkId  Int
+    bookmark    Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+    createdById Int
+    createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+
+    @@unique([bookmarkId, name, createdById])
+    @@index([name])
+}
