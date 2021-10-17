@@ -71,6 +71,13 @@ const resolvers: Resolvers = {
                 },
             }))!;
         },
+        aliases: async (parent, args, context, info) => {
+            return prisma.bookmarkAlias.findMany({
+                where: {
+                    bookmarkId: parent.id,
+                },
+            });
+        },
     },
     Category: {},
     User: {},
@@ -455,9 +462,37 @@ const resolvers: Resolvers = {
 
             // @ts-ignore
             await prisma.$transaction(async (transaction: typeof prisma) => {
-                let { tags = [], ...rest } = strip(args.input);
+                let { tags, aliases, ...rest } = strip(args.input);
 
-                if (tags.length) {
+                if (aliases) {
+                    await transaction.bookmarkAlias.deleteMany({
+                        where: {
+                            bookmarkId: args.bookmarkId,
+                            url: {
+                                notIn: aliases
+                            }
+                        }
+                    });
+
+                    // create missing aliases
+                    await Promise.all(aliases.map((url) => transaction.bookmarkAlias.upsert({
+                        where: {
+                            bookmarkId_url: {
+                                bookmarkId: args.bookmarkId,
+                                url
+                            }
+                        },
+                        update: {},
+                        create: {
+                            url,
+                            bookmark: {
+                                connect: { id: args.bookmarkId }
+                            },
+                        }
+                    })));
+                }
+
+                if (tags) {
                     tags = tags.map((tag) => tag.toLowerCase())
                     // delete removed tags
                     await prisma.tag.deleteMany({

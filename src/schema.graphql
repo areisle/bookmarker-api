@@ -36,14 +36,14 @@ type Bookmark {
     categoryId: Int!
     tags: [Tag!]!
     category: Category!
-    # aliases: [BookmarkAlias!]!
+    aliases: [BookmarkAlias!]!
 }
 
 type BookmarkAlias {
     id: Int!
     createdAt: Date!
     modifiedAt: Date!
-    pattern: String!
+    url: String!
     bookmark: Bookmark!
 }
 
@@ -90,6 +90,7 @@ input UpdateBookmarkContent {
     url: String
     description: String
     tags: [String!]
+    aliases: [String!]
 }
 
 type Mutation {

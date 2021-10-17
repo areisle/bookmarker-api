@@ -19,6 +19,7 @@ export type Scalars = {
 
 export type Bookmark = {
   __typename?: 'Bookmark';
+  aliases: Array<BookmarkAlias>;
   category: Category;
   categoryId: Scalars['Int'];
   createdAt: Scalars['Date'];
@@ -36,7 +37,7 @@ export type BookmarkAlias = {
   createdAt: Scalars['Date'];
   id: Scalars['Int'];
   modifiedAt: Scalars['Date'];
-  pattern: Scalars['String'];
+  url: Scalars['String'];
 };
 
 export type Category = {
@@ -209,6 +210,7 @@ export type Tag = {
 };
 
 export type UpdateBookmarkContent = {
+  aliases?: Maybe<Array<Scalars['String']>>;
   description?: Maybe<Scalars['String']>;
   tags?: Maybe<Array<Scalars['String']>>;
   title?: Maybe<Scalars['String']>;
@@ -341,6 +343,7 @@ export type ResolversParentTypes = {
 };
 
 export type BookmarkResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['Bookmark'] = ResolversParentTypes['Bookmark']> = {
+  aliases?: Resolver<Array<ResolversTypes['BookmarkAlias']>, ParentType, ContextType>;
   category?: Resolver<ResolversTypes['Category'], ParentType, ContextType>;
   categoryId?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
@@ -358,7 +361,7 @@ export type BookmarkAliasResolvers<ContextType = RequestContext, ParentType exte
   createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   modifiedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  pattern?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  url?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
