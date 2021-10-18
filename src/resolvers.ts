@@ -79,7 +79,33 @@ const resolvers: Resolvers = {
             });
         },
     },
-    Category: {},
+    Category: {
+        rules: async (parent, args, context, info) => {
+            return prisma.categoryPatternAlias.findMany({
+                where: {
+                    category: { id: parent.id }
+                }
+            })
+        },
+        users: async (parent, args, context, info) => {
+            return prisma.userCategory.findMany({
+                where: {
+                    category: { id: parent.id }
+                }
+            })
+        },
+        isAdmin: async (parent, args, context, info) => {
+            const count = await prisma.userCategory.count({
+                where: {
+                    category: { id: parent.id },
+                    user: { id: context.user!.id },
+                    admin: true
+                }
+            });
+
+            return Boolean(count)
+        },
+    },
     User: {},
     UserCategory: {
         user: async (parent) => {

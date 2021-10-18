@@ -44,9 +44,23 @@ export type Category = {
   __typename?: 'Category';
   createdAt: Scalars['Date'];
   id: Scalars['Int'];
+  isAdmin: Scalars['Boolean'];
   modifiedAt: Scalars['Date'];
   name: Scalars['String'];
+  rules: Array<CategoryPatternAlias>;
   users: Array<UserCategory>;
+};
+
+export type CategoryPatternAlias = {
+  __typename?: 'CategoryPatternAlias';
+  canonical: Scalars['String'];
+  category: Category;
+  categoryId: Scalars['Int'];
+  createdAt: Scalars['Date'];
+  id: Scalars['Int'];
+  match: Scalars['String'];
+  modifiedAt: Scalars['Date'];
+  origin: Scalars['String'];
 };
 
 export type CreateBookmarkContent = {
@@ -70,6 +84,7 @@ export type Mutation = {
   removeTag?: Maybe<Scalars['Void']>;
   removeUser?: Maybe<Scalars['Void']>;
   updateBookmark?: Maybe<Scalars['Void']>;
+  updateCategory?: Maybe<Scalars['Void']>;
 };
 
 
@@ -133,6 +148,12 @@ export type MutationRemoveUserArgs = {
 export type MutationUpdateBookmarkArgs = {
   bookmarkId: Scalars['Int'];
   input: UpdateBookmarkContent;
+};
+
+
+export type MutationUpdateCategoryArgs = {
+  id: Scalars['Int'];
+  input?: Maybe<UpdateCategoryContent>;
 };
 
 export type Query = {
@@ -215,6 +236,10 @@ export type UpdateBookmarkContent = {
   tags?: Maybe<Array<Scalars['String']>>;
   title?: Maybe<Scalars['String']>;
   url?: Maybe<Scalars['String']>;
+};
+
+export type UpdateCategoryContent = {
+  title?: Maybe<Scalars['String']>;
 };
 
 export type User = {
@@ -308,6 +333,7 @@ export type ResolversTypes = {
   BookmarkAlias: ResolverTypeWrapper<BookmarkAlias>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Category: ResolverTypeWrapper<Category>;
+  CategoryPatternAlias: ResolverTypeWrapper<CategoryPatternAlias>;
   CreateBookmarkContent: CreateBookmarkContent;
   Date: ResolverTypeWrapper<Scalars['Date']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
@@ -317,6 +343,7 @@ export type ResolversTypes = {
   String: ResolverTypeWrapper<Scalars['String']>;
   Tag: ResolverTypeWrapper<Tag>;
   UpdateBookmarkContent: UpdateBookmarkContent;
+  UpdateCategoryContent: UpdateCategoryContent;
   User: ResolverTypeWrapper<User>;
   UserCategory: ResolverTypeWrapper<UserCategory>;
   Void: ResolverTypeWrapper<Scalars['Void']>;
@@ -328,6 +355,7 @@ export type ResolversParentTypes = {
   BookmarkAlias: BookmarkAlias;
   Boolean: Scalars['Boolean'];
   Category: Category;
+  CategoryPatternAlias: CategoryPatternAlias;
   CreateBookmarkContent: CreateBookmarkContent;
   Date: Scalars['Date'];
   Int: Scalars['Int'];
@@ -337,6 +365,7 @@ export type ResolversParentTypes = {
   String: Scalars['String'];
   Tag: Tag;
   UpdateBookmarkContent: UpdateBookmarkContent;
+  UpdateCategoryContent: UpdateCategoryContent;
   User: User;
   UserCategory: UserCategory;
   Void: Scalars['Void'];
@@ -368,9 +397,23 @@ export type BookmarkAliasResolvers<ContextType = RequestContext, ParentType exte
 export type CategoryResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['Category'] = ResolversParentTypes['Category']> = {
   createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  isAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   modifiedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  rules?: Resolver<Array<ResolversTypes['CategoryPatternAlias']>, ParentType, ContextType>;
   users?: Resolver<Array<ResolversTypes['UserCategory']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type CategoryPatternAliasResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['CategoryPatternAlias'] = ResolversParentTypes['CategoryPatternAlias']> = {
+  canonical?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  category?: Resolver<ResolversTypes['Category'], ParentType, ContextType>;
+  categoryId?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  match?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  modifiedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  origin?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -394,6 +437,7 @@ export type MutationResolvers<ContextType = RequestContext, ParentType extends R
   removeTag?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationRemoveTagArgs, 'bookmarkId' | 'name'>>;
   removeUser?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationRemoveUserArgs, 'categoryId' | 'id'>>;
   updateBookmark?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationUpdateBookmarkArgs, 'bookmarkId' | 'input'>>;
+  updateCategory?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationUpdateCategoryArgs, 'id'>>;
 };
 
 export type QueryResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
@@ -447,6 +491,7 @@ export type Resolvers<ContextType = RequestContext> = {
   Bookmark?: BookmarkResolvers<ContextType>;
   BookmarkAlias?: BookmarkAliasResolvers<ContextType>;
   Category?: CategoryResolvers<ContextType>;
+  CategoryPatternAlias?: CategoryPatternAliasResolvers<ContextType>;
   Date?: GraphQLScalarType;
   JSON?: GraphQLScalarType;
   Mutation?: MutationResolvers<ContextType>;
