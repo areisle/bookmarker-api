@@ -561,6 +561,101 @@ const resolvers: Resolvers = {
                     data: rest
                 });
             })
+        },
+        addCategoryPatternAlias: async (_, args, context) => {
+            const userId = context.user?.id;
+            const { categoryId, input } = args;
+
+            if (!userId) {
+                throw new AuthenticationError('Authentication required')
+            }
+
+            await checkBelongsToCategory({
+                context,
+                categoryId,
+                requireAdmin: true
+            });
+
+            try {
+                // test valid regex
+                new RegExp(`^${input.match}$`)
+            } catch {
+                throw new UserInputError(`Unable to add pattern alias. "match" is invalid. ${input.match} is not a valid regular expression.`)
+            }
+
+            await prisma.categoryPatternAlias.create({
+                data: {
+                    category: { connect: { id: categoryId }},
+                    ...input
+                }
+            })
+        },
+        removeCategoryPatternAlias: async (_, args, context) => {
+            const userId = context.user?.id;
+            const { id } = args;
+
+            if (!userId) {
+                throw new AuthenticationError('Authentication required')
+            }
+
+            const alias = await prisma.categoryPatternAlias.findUnique({
+                where: { id: args.id }
+            });
+
+            if (!alias) {
+                throw new UserInputError(`Unable to find pattern alias record with id: ${id}`);
+            }
+
+            await checkBelongsToCategory({
+                context,
+                categoryId: alias?.categoryId,
+                requireAdmin: true
+            });
+
+            await prisma.categoryPatternAlias.delete({
+                where: {
+                    id: args.id
+                }
+            })
+        },
+        updateCategoryPatternAlias: async (_, args, context) => {
+            const userId = context.user?.id;
+            const { id } = args;
+            const input = strip(args.input);
+
+            if (!userId) {
+                throw new AuthenticationError('Authentication required')
+            }
+
+            const alias = await prisma.categoryPatternAlias.findUnique({
+                where: { id: args.id }
+            });
+
+            if (!alias) {
+                throw new UserInputError(`Unable to find pattern alias record with id: ${id}`);
+            }
+
+            await checkBelongsToCategory({
+                context,
+                categoryId: alias?.categoryId,
+                requireAdmin: true
+            });
+
+            try {
+                // test valid regex
+                if (input.match) {
+                    new RegExp(`^${input.match}$`)
+                }
+            } catch {
+                throw new UserInputError(`Unable to update pattern alias. "match" is invalid. ${input.match} is not a valid regular expression.`)
+            }
+
+            await prisma.categoryPatternAlias.update({
+                where: {
+                    id: args.id
+                },
+                data: input
+            })
         }
     },
 };

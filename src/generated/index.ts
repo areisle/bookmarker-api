@@ -71,20 +71,29 @@ export type CreateBookmarkContent = {
   url: Scalars['String'];
 };
 
+export type CreateCategoryAliasContent = {
+  canonical: Scalars['String'];
+  match: Scalars['String'];
+  origin: Scalars['String'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   addBookmark?: Maybe<Bookmark>;
   addCategory?: Maybe<Category>;
+  addCategoryPatternAlias?: Maybe<Scalars['Void']>;
   addTag?: Maybe<Scalars['Void']>;
   addUsers?: Maybe<Scalars['Void']>;
   batchUpdateHostName?: Maybe<Scalars['Void']>;
   leaveCategory?: Maybe<Scalars['Void']>;
   login: Scalars['String'];
   removeBookmark?: Maybe<Scalars['Void']>;
+  removeCategoryPatternAlias?: Maybe<Scalars['Void']>;
   removeTag?: Maybe<Scalars['Void']>;
   removeUser?: Maybe<Scalars['Void']>;
   updateBookmark?: Maybe<Scalars['Void']>;
   updateCategory?: Maybe<Scalars['Void']>;
+  updateCategoryPatternAlias?: Maybe<Scalars['Void']>;
 };
 
 
@@ -95,6 +104,12 @@ export type MutationAddBookmarkArgs = {
 
 export type MutationAddCategoryArgs = {
   name: Scalars['String'];
+};
+
+
+export type MutationAddCategoryPatternAliasArgs = {
+  categoryId: Scalars['Int'];
+  input: CreateCategoryAliasContent;
 };
 
 
@@ -133,6 +148,11 @@ export type MutationRemoveBookmarkArgs = {
 };
 
 
+export type MutationRemoveCategoryPatternAliasArgs = {
+  id: Scalars['Int'];
+};
+
+
 export type MutationRemoveTagArgs = {
   bookmarkId: Scalars['Int'];
   name: Scalars['String'];
@@ -154,6 +174,12 @@ export type MutationUpdateBookmarkArgs = {
 export type MutationUpdateCategoryArgs = {
   id: Scalars['Int'];
   input?: Maybe<UpdateCategoryContent>;
+};
+
+
+export type MutationUpdateCategoryPatternAliasArgs = {
+  id: Scalars['Int'];
+  input: UpdateCategoryAliasContent;
 };
 
 export type Query = {
@@ -236,6 +262,12 @@ export type UpdateBookmarkContent = {
   tags?: Maybe<Array<Scalars['String']>>;
   title?: Maybe<Scalars['String']>;
   url?: Maybe<Scalars['String']>;
+};
+
+export type UpdateCategoryAliasContent = {
+  canonical?: Maybe<Scalars['String']>;
+  match?: Maybe<Scalars['String']>;
+  origin?: Maybe<Scalars['String']>;
 };
 
 export type UpdateCategoryContent = {
@@ -335,6 +367,7 @@ export type ResolversTypes = {
   Category: ResolverTypeWrapper<Category>;
   CategoryPatternAlias: ResolverTypeWrapper<CategoryPatternAlias>;
   CreateBookmarkContent: CreateBookmarkContent;
+  CreateCategoryAliasContent: CreateCategoryAliasContent;
   Date: ResolverTypeWrapper<Scalars['Date']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   JSON: ResolverTypeWrapper<Scalars['JSON']>;
@@ -343,6 +376,7 @@ export type ResolversTypes = {
   String: ResolverTypeWrapper<Scalars['String']>;
   Tag: ResolverTypeWrapper<Tag>;
   UpdateBookmarkContent: UpdateBookmarkContent;
+  UpdateCategoryAliasContent: UpdateCategoryAliasContent;
   UpdateCategoryContent: UpdateCategoryContent;
   User: ResolverTypeWrapper<User>;
   UserCategory: ResolverTypeWrapper<UserCategory>;
@@ -357,6 +391,7 @@ export type ResolversParentTypes = {
   Category: Category;
   CategoryPatternAlias: CategoryPatternAlias;
   CreateBookmarkContent: CreateBookmarkContent;
+  CreateCategoryAliasContent: CreateCategoryAliasContent;
   Date: Scalars['Date'];
   Int: Scalars['Int'];
   JSON: Scalars['JSON'];
@@ -365,6 +400,7 @@ export type ResolversParentTypes = {
   String: Scalars['String'];
   Tag: Tag;
   UpdateBookmarkContent: UpdateBookmarkContent;
+  UpdateCategoryAliasContent: UpdateCategoryAliasContent;
   UpdateCategoryContent: UpdateCategoryContent;
   User: User;
   UserCategory: UserCategory;
@@ -428,16 +464,19 @@ export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 export type MutationResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   addBookmark?: Resolver<Maybe<ResolversTypes['Bookmark']>, ParentType, ContextType, RequireFields<MutationAddBookmarkArgs, 'input'>>;
   addCategory?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<MutationAddCategoryArgs, 'name'>>;
+  addCategoryPatternAlias?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationAddCategoryPatternAliasArgs, 'categoryId' | 'input'>>;
   addTag?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationAddTagArgs, 'bookmarkId' | 'name'>>;
   addUsers?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationAddUsersArgs, 'categoryId' | 'emails'>>;
   batchUpdateHostName?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationBatchUpdateHostNameArgs, 'categoryId' | 'newName' | 'oldName'>>;
   leaveCategory?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationLeaveCategoryArgs, 'id'>>;
   login?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'email' | 'password'>>;
   removeBookmark?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationRemoveBookmarkArgs, 'id'>>;
+  removeCategoryPatternAlias?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationRemoveCategoryPatternAliasArgs, 'id'>>;
   removeTag?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationRemoveTagArgs, 'bookmarkId' | 'name'>>;
   removeUser?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationRemoveUserArgs, 'categoryId' | 'id'>>;
   updateBookmark?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationUpdateBookmarkArgs, 'bookmarkId' | 'input'>>;
   updateCategory?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationUpdateCategoryArgs, 'id'>>;
+  updateCategoryPatternAlias?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationUpdateCategoryPatternAliasArgs, 'id' | 'input'>>;
 };
 
 export type QueryResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
