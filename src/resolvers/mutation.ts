@@ -37,13 +37,27 @@ const Mutation: Resolvers["Mutation"] = {
         if (!context.user) {
             throw new AuthenticationError("Authentication required");
         }
-        return prisma.tag.delete({
+
+        const bookmark = await prisma.bookmark.findUnique({
             where: {
-                bookmarkId_name_createdById: {
-                    bookmarkId: args.bookmarkId,
-                    createdById: context.user.id,
-                    name: args.name,
-                },
+                id: args.bookmarkId,
+            },
+        });
+
+        if (!bookmark) {
+            throw new UserInputError("Bookmark not found.");
+        }
+
+        await checkBelongsToCategory({
+            context,
+            categoryId: bookmark.categoryId,
+        });
+
+        return prisma.tag.deleteMany({
+            where: {
+                bookmarkId: args.bookmarkId,
+                createdById: context.user.id,
+                name: args.name,
             },
         });
     },
