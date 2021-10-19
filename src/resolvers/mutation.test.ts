@@ -414,7 +414,47 @@ describe("user is invited to category", () => {
 
     });
 
-    test.todo("user can reject invitation to join category");
+    test("user can reject invitation to join category", async () => {
+        let resp = await server.executeOperation({
+            query: gql`
+                query categories {
+                    categories {
+                        id
+                        name
+                    }
+                }
+            `
+        }, mockRequest(userTokens[0]));
+
+        const prevCategoriesCount = resp.data?.categories.length;
+
+        let response = await server.executeOperation({
+            query: gql`
+                mutation leaveCategory($id: Int!) {
+                    leaveCategory(id: $id)
+                }
+            `,
+            variables: {
+                id: categoryId,
+            },
+        }, mockRequest(userTokens[0]));
+
+        expect(response.errors).toBeUndefined()
+
+        resp = await server.executeOperation({
+            query: gql`
+                query categories {
+                    categories {
+                        id
+                        name
+                    }
+                }
+            `
+        }, mockRequest(userTokens[0]));
+
+        expect(resp.data?.categories.length).toEqual(prevCategoriesCount - 1)
+    });
+
     test.todo("user can accept invitation to join category");
 });
 
