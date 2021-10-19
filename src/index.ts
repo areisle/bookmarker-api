@@ -2,7 +2,7 @@ import { ApolloServer, AuthenticationError } from "apollo-server";
 import { typeDefs } from "./typeDefs";
 import { resolvers } from "./resolvers";
 import { prisma } from "./db";
-import { RequestContext } from "./generated/utilities";
+import { RequestContext } from "./resolvers/generated/utilities";
 import { authenticateToken } from "./auth";
 
 const server = new ApolloServer({

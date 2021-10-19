@@ -1,6 +1,6 @@
 import { AuthenticationError, ForbiddenError } from "apollo-server";
 import { prisma } from "../db";
-import { RequestContext } from "../generated/utilities";
+import { RequestContext } from "./generated/utilities";
 
 type NonNull<P> = P extends Promise<infer U>
     ? Promise<Exclude<U, null>>
