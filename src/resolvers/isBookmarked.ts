@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { URL } from "url";
-import { prisma } from "./db";
+import { prisma } from "../db";
 
 
 
