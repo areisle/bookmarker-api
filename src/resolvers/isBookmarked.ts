@@ -21,6 +21,7 @@ const getCanonicalUrls = async (userId: number, url: string) => {
             JOIN "UserCategory" ON "UserCategory"."categoryId" = "Category".id
         WHERE
             "UserCategory"."userId" = ${userId}
+            AND "UserCategory".active IS TRUE
             AND "CategoryPatternAlias".origin = ${parsedUrl.origin};
     `;
 
@@ -56,6 +57,7 @@ const bookmarksQuery = async (userId: number, urls: string[]) => {
             LEFT JOIN "BookmarkAlias" on "Bookmark".id = "BookmarkAlias"."bookmarkId"
         WHERE
             "UserCategory"."userId" = ${userId}
+            AND "UserCategory".active IS TRUE
             AND (
                 "Bookmark".url in (${Prisma.join(urls)})
                 OR "BookmarkAlias".url in (${Prisma.join(urls)})
