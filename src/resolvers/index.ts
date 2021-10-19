@@ -1,58 +1,10 @@
-import { AuthenticationError, ForbiddenError, UserInputError } from "apollo-server";
+import { AuthenticationError, UserInputError } from "apollo-server";
 import { login } from "../auth";
 import { prisma } from "../db";
 import { Resolvers } from "../generated";
-import { RequestContext } from "../generated/utilities";
 import { checkIsBookmarked, getBookmarkIdsForUrl } from "../isBookmarked";
+import { checkBelongsToCategory, strip } from "./helpers";
 
-type NonNull<P> = P extends Promise<infer U>
-    ? Promise<Exclude<U, null>>
-    : Exclude<P, null>;
-
-type NonNullValues<Obj> = {
-    [K in keyof Obj]: NonNull<Obj[K]>;
-};
-
-function strip<Obj>(object: Obj): NonNullValues<Obj> {
-    const next = {} as NonNullValues<Obj>;
-    for (const [key, value] of Object.entries(object)) {
-        if (value !== undefined && value !== null) {
-            next[key] = value;
-        }
-    }
-    return next;
-}
-
-interface CheckArgs {
-    context: RequestContext;
-    categoryId: number;
-    requireAdmin?: boolean;
-    allowInactive?: boolean;
-}
-
-const checkBelongsToCategory = async (args: CheckArgs) => {
-    const { context, categoryId, requireAdmin, allowInactive } = args;
-
-    if (!context.user) {
-        throw new AuthenticationError('Authentication required')
-    }
-    const user = await prisma.userCategory.findUnique({
-        where: {
-            userId_categoryId: {
-                userId: context.user.id,
-                categoryId,
-            },
-        },
-    });
-
-    if (
-        !user ||
-        (!allowInactive && !user.active) ||
-        (requireAdmin && !user.admin)
-    ) {
-        throw new ForbiddenError("User does not belong to category.");
-    }
-};
 
 const resolvers: Resolvers = {
     Bookmark: {
