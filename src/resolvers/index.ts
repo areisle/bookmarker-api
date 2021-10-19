@@ -1,5 +1,5 @@
 import { prisma } from "../db";
-import { Resolvers } from "../generated";
+import { Resolvers } from "./generated";
 import { Query } from "./query";
 import { Mutation } from "./mutation";
 

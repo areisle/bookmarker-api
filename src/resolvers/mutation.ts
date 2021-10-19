@@ -1,7 +1,7 @@
 import { AuthenticationError, UserInputError } from "apollo-server";
 import { login } from "../auth";
 import { prisma } from "../db";
-import { Resolvers } from "../generated";
+import { Resolvers } from "./generated";
 import { checkBelongsToCategory, strip } from "./helpers";
 
 const Mutation: Resolvers["Mutation"] = {

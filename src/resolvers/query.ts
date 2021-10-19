@@ -1,6 +1,6 @@
 import { AuthenticationError } from "apollo-server";
 import { prisma } from "../db";
-import { Resolvers } from "../generated";
+import { Resolvers } from "./generated";
 import { checkIsBookmarked, getBookmarkIdsForUrl } from "../isBookmarked";
 import { checkBelongsToCategory, strip } from "./helpers";
 

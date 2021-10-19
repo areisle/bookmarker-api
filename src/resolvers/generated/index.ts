@@ -540,4 +540,3 @@ export type Resolvers<ContextType = RequestContext> = {
   UserCategory?: UserCategoryResolvers<ContextType>;
   Void?: GraphQLScalarType;
 };
-
