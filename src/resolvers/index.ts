@@ -1,9 +1,9 @@
 import { AuthenticationError, ForbiddenError, UserInputError } from "apollo-server";
-import { login } from "./auth";
-import { prisma } from "./db";
-import { Resolvers } from "./generated";
-import { RequestContext } from "./generated/utilities";
-import { checkIsBookmarked, getBookmarkIdsForUrl } from "./isBookmarked";
+import { login } from "../auth";
+import { prisma } from "../db";
+import { Resolvers } from "../generated";
+import { RequestContext } from "../generated/utilities";
+import { checkIsBookmarked, getBookmarkIdsForUrl } from "../isBookmarked";
 
 type NonNull<P> = P extends Promise<infer U>
     ? Promise<Exclude<U, null>>
