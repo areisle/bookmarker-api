@@ -4,6 +4,8 @@ import { createUser } from "../auth";
 import { prisma } from "../db";
 import { server } from "..";
 import { gql } from "apollo-server";
+import { v4 as uuid } from 'uuid';
+import { User } from ".prisma/client";
 
 const mockRequest = (token: string = '') => ({
     req: {
@@ -13,6 +15,7 @@ const mockRequest = (token: string = '') => ({
     }
 }) as any;
 
+let users: User[] = [];
 let userTokens: string[] = [];
 
 beforeAll(async () => {
@@ -20,14 +23,24 @@ beforeAll(async () => {
     await prisma.user.deleteMany({});
     await prisma.category.deleteMany({});
     // cascade delete will take care of the rest
+    const count = await prisma.user.count({});
+    console.log({ count })
 
     // add test data
     // add a few test users
+    const emails = Array(3).fill(null).map(() => uuid()).map((num) => `test-user-${num}@email.ca`);
     await Promise.all(
-        [1, 2, 3].map((num) => createUser(`test-user-${num}@email.ca`, `password-${num}`))
+        emails.map((email) => createUser(email, `password`))
     );
 
-    const getToken = async (user: number) => {
+    // get users
+    users = await prisma.user.findMany({
+        where: {
+            email: { in: emails }
+        }
+    })
+
+    const getToken = async (email: string) => {
         return (await server.executeOperation({
             query: gql`
                 mutation login($email: String!, $password: String!) {
@@ -35,13 +48,13 @@ beforeAll(async () => {
                 }
                 `,
             variables: {
-                email: `test-user-${user}@email.ca`,
-                password: `password-${user}`,
+                email,
+                password: `password`,
             },
         }, mockRequest())).data?.login;
     }
 
-    userTokens = await Promise.all([1, 2, 3].map((num) => getToken(num)))
+    userTokens = await Promise.all(users.map((user) => getToken(user.email)))
 });
 
 test("user can create new categories", async () => {
@@ -274,7 +287,7 @@ describe("user is invited to category", () => {
             `,
             variables: {
                 categoryId,
-                emails: [`test-user-1@email.ca`]
+                emails: [users[0].email]
             },
         }, mockRequest(userTokens[1]));
 
