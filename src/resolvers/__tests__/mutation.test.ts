@@ -1,60 +1,21 @@
 // make sure users can't get categories they don't belong to
 
-import { createUser } from "../auth";
-import { prisma } from "../db";
-import { server } from "..";
+import { prisma } from "../../db";
+import { server } from "../..";
 import { gql } from "apollo-server";
-import { v4 as uuid } from 'uuid';
 import { User } from ".prisma/client";
-
-const mockRequest = (token: string = '') => ({
-    req: {
-        headers: {
-            authorization: token
-        }
-    }
-}) as any;
+import { createTestUserAndLogin, mockRequest } from "./utilities";
 
 let users: User[] = [];
 let userTokens: string[] = [];
 
 beforeAll(async () => {
-    // clear test db
-    await prisma.user.deleteMany({});
-    await prisma.category.deleteMany({});
-    // cascade delete will take care of the rest
-    const count = await prisma.user.count({});
-    console.log({ count })
+    const usersAndTokens = await Promise.all(Array(3).fill(null).map(() => createTestUserAndLogin()));
 
-    // add test data
-    // add a few test users
-    const emails = Array(3).fill(null).map(() => uuid()).map((num) => `test-user-${num}@email.ca`);
-    await Promise.all(
-        emails.map((email) => createUser(email, `password`))
-    );
-
-    // get users
-    users = await prisma.user.findMany({
-        where: {
-            email: { in: emails }
-        }
-    })
-
-    const getToken = async (email: string) => {
-        return (await server.executeOperation({
-            query: gql`
-                mutation login($email: String!, $password: String!) {
-                    login(email: $email, password: $password)
-                }
-                `,
-            variables: {
-                email,
-                password: `password`,
-            },
-        }, mockRequest())).data?.login;
+    for (const [user, token] of usersAndTokens) {
+        users.push(user);
+        userTokens.push(token);
     }
-
-    userTokens = await Promise.all(users.map((user) => getToken(user.email)))
 });
 
 test("user can create new categories", async () => {
@@ -101,10 +62,7 @@ test("user can create new categories", async () => {
 });
 
 describe("user doesn't belong to category", () => {
-    let categoryId: number;
-    let bookmarkId: number;
-
-    beforeAll(async () => {
+    const createCategory  = async () => {
         // add category for user 2
         const resp = await server.executeOperation({
             query: gql`
@@ -119,7 +77,7 @@ describe("user doesn't belong to category", () => {
                 name: 'User 2s Private Category'
             },
         }, mockRequest(userTokens[1]));
-        categoryId = resp.data?.addCategory.id
+        const categoryId = resp.data?.addCategory.id
 
         // add a bookmark
         let response = await server.executeOperation({
@@ -141,10 +99,13 @@ describe("user doesn't belong to category", () => {
             },
         }, mockRequest(userTokens[1]));
 
-        bookmarkId = response.data?.addBookmark.id
-    })
+        const bookmarkId = response.data?.addBookmark.id
+        return { categoryId, bookmarkId };
+    }
 
     test("user can't get category", async () => {
+        const { categoryId } = await createCategory();
+
         const response = await server.executeOperation({
             query: gql`
                 query getCategory($id: Int!) {
@@ -164,6 +125,8 @@ describe("user doesn't belong to category", () => {
     });
 
     test("user can't add bookmarks", async () => {
+        const { categoryId } = await createCategory();
+
         const response = await server.executeOperation({
             query: gql`
                 mutation addBookmark($input: CreateBookmarkContent!) {
@@ -189,6 +152,8 @@ describe("user doesn't belong to category", () => {
     });
 
     test("user can't remove bookmarks", async () => {
+        const { bookmarkId } = await createCategory();
+
         let response = await server.executeOperation({
             query: gql`
                 mutation removeBookmark($id: Int!) {
@@ -205,6 +170,7 @@ describe("user doesn't belong to category", () => {
     });
 
     test("user can't add tags", async () => {
+        const { bookmarkId } = await createCategory();
         let response = await server.executeOperation({
             query: gql`
                 mutation addTag($bookmarkId: Int!, $name: String!) {
@@ -222,6 +188,8 @@ describe("user doesn't belong to category", () => {
     });
 
     test("user can't remove tags", async () => {
+        const { bookmarkId } = await createCategory();
+
         let response = await server.executeOperation({
             query: gql`
                 mutation removeTag($bookmarkId: Int!, $name: String!) {
@@ -239,6 +207,8 @@ describe("user doesn't belong to category", () => {
     });
 
     test("user can't invite users", async () => {
+        const { categoryId } = await createCategory();
+
         let response = await server.executeOperation({
             query: gql`
                 mutation addUsers($categoryId: Int!, $emails: [String!]!) {
@@ -258,10 +228,7 @@ describe("user doesn't belong to category", () => {
 });
 
 describe("user is invited to category", () => {
-    let categoryId: number;
-    let bookmarkId: number;
-
-    beforeAll(async () => {
+    const createCategory  = async () => {
         // add category for user 2
         let response = await server.executeOperation({
             query: gql`
@@ -276,9 +243,8 @@ describe("user is invited to category", () => {
                 name: 'User 2s Private Category'
             },
         }, mockRequest(userTokens[1]));
-        categoryId = response.data?.addCategory.id
+        const categoryId = response.data?.addCategory.id
 
-        // add user
         response = await server.executeOperation({
             query: gql`
                 mutation addUsers($categoryId: Int!, $emails: [String!]!) {
@@ -290,7 +256,6 @@ describe("user is invited to category", () => {
                 emails: [users[0].email]
             },
         }, mockRequest(userTokens[1]));
-
 
         // add a bookmark
         response = await server.executeOperation({
@@ -312,10 +277,13 @@ describe("user is invited to category", () => {
             },
         }, mockRequest(userTokens[1]));
 
-        bookmarkId = response.data?.addBookmark.id
-    })
+        const bookmarkId = response.data?.addBookmark.id
+        return { categoryId, bookmarkId };
+    }
 
     test("user can't get category", async () => {
+        const { categoryId } = await createCategory();
+
         const response = await server.executeOperation({
             query: gql`
                 query getCategory($id: Int!) {
@@ -335,6 +303,8 @@ describe("user is invited to category", () => {
     });
 
     test("user can't add bookmarks", async () => {
+        const { categoryId } = await createCategory();
+
         const response = await server.executeOperation({
             query: gql`
                 mutation addBookmark($input: CreateBookmarkContent!) {
@@ -360,6 +330,8 @@ describe("user is invited to category", () => {
     });
 
     test("user can't remove bookmarks", async () => {
+        const { bookmarkId } = await createCategory();
+
         let response = await server.executeOperation({
             query: gql`
                 mutation removeBookmark($id: Int!) {
@@ -376,6 +348,8 @@ describe("user is invited to category", () => {
     });
 
     test("user can't add tags", async () => {
+        const { bookmarkId } = await createCategory();
+
         let response = await server.executeOperation({
             query: gql`
                 mutation addTag($bookmarkId: Int!, $name: String!) {
@@ -393,6 +367,8 @@ describe("user is invited to category", () => {
     });
 
     test("user can't remove tags", async () => {
+        const { bookmarkId } = await createCategory();
+
         let response = await server.executeOperation({
             query: gql`
                 mutation removeTag($bookmarkId: Int!, $name: String!) {
@@ -410,6 +386,8 @@ describe("user is invited to category", () => {
     });
 
     test("user can't invite users", async () => {
+        const { categoryId } = await createCategory();
+
         let response = await server.executeOperation({
             query: gql`
                 mutation addUsers($categoryId: Int!, $emails: [String!]!) {
@@ -428,6 +406,8 @@ describe("user is invited to category", () => {
     });
 
     test("user can reject invitation to join category", async () => {
+        const { categoryId } = await createCategory();
+
         let resp = await server.executeOperation({
             query: gql`
                 query categories {
@@ -468,7 +448,28 @@ describe("user is invited to category", () => {
         expect(resp.data?.categories.length).toEqual(prevCategoriesCount - 1)
     });
 
-    test.todo("user can accept invitation to join category");
+    test("user can accept invitation to join category", async () => {
+        const { categoryId } = await createCategory();
+
+        const response  = await server.executeOperation({
+            query: gql`
+                mutation ($id: Int!) {
+                    joinCategory(id: $id)
+                }
+            `,
+            variables: { id: categoryId }
+        }, mockRequest(userTokens[0]));
+
+        const userCategory = await prisma.userCategory.findFirst({
+            where: {
+                userId: users[0].id,
+                categoryId,
+            }
+        })
+
+        expect(userCategory?.active).toEqual(true);
+
+    });
 });
 
 describe("user is active for category", () => {

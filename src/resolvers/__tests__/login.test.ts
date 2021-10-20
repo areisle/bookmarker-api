@@ -1,30 +1,20 @@
 // make sure users can't get categories they don't belong to
 
 import { gql } from "apollo-server";
-import { createUser } from "../auth";
-import { prisma } from "../db";
-import { server } from "..";
+import { prisma } from "../../db";
+import { server } from "../..";
+import { createTestUser, mockRequest } from "./utilities";
+import { User } from ".prisma/client";
+
+let testUser: User;
 
 beforeAll(async () => {
     // clear test db
-    await prisma.user.deleteMany({});
-    await prisma.category.deleteMany({});
+    // await prisma.user.deleteMany({});
+    // await prisma.category.deleteMany({});
     // cascade delete will take care of the rest
-
-    // add test data
-    // add a few test users
-    await Promise.all(
-        [1, 2, 3].map((num) => createUser(`test-user-${num}@email.ca`, `password-${num}`))
-    );
+    testUser = await createTestUser()
 });
-
-const mockRequest = (token: string = '') => ({
-    req: {
-        headers: {
-            authorization: token
-        }
-    }
-}) as any;
 
 test("user can't login without account", async () => {
     const response = await server.executeOperation({
@@ -35,7 +25,7 @@ test("user can't login without account", async () => {
             `,
         variables: {
             email: `test-user-7@email.ca`,
-            password: 'password-1',
+            password: 'password',
         },
     }, mockRequest());
 
@@ -52,7 +42,7 @@ test("user can't login with incorrect password", async () => {
             }
             `,
         variables: {
-            email: `test-user-1@email.ca`,
+            email: testUser.email,
             password: 'password-2',
         },
     }, mockRequest());
@@ -70,8 +60,8 @@ test("user can login", async () => {
             }
             `,
         variables: {
-            email: `test-user-1@email.ca`,
-            password: 'password-1',
+            email: testUser.email,
+            password: 'password',
         },
     }, mockRequest());
 

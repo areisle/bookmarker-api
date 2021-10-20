@@ -80,6 +80,29 @@ const Mutation: Resolvers["Mutation"] = {
             },
         });
     },
+    joinCategory: async (_, args, context) => {
+        if (!context.user) {
+            throw new AuthenticationError("Authentication required");
+        }
+
+        await checkBelongsToCategory({
+            categoryId: args.id,
+            context,
+            allowInactive: true
+        })
+
+        await prisma.userCategory.update({
+            where: {
+                userId_categoryId: {
+                    categoryId: args.id,
+                    userId: context.user.id,
+                }
+            },
+            data: {
+                active: true
+            }
+        })
+    },
     leaveCategory: async (_, args, context) => {
         if (!context.user) {
             throw new AuthenticationError("Authentication required");

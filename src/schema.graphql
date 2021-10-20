@@ -129,6 +129,7 @@ type Mutation {
     updateCategoryPatternAlias(id: Int!, input: UpdateCategoryAliasContent!): Void
     updateCategory(id: Int!, input: UpdateCategoryContent): Void
     leaveCategory(id: Int!): Void
+    joinCategory(id: Int!): Void
     addUsers(categoryId: Int!, emails: [String!]!): Void
     removeUser(categoryId: Int!, id: Int!): Void
     addBookmark(input: CreateBookmarkContent!): Bookmark
