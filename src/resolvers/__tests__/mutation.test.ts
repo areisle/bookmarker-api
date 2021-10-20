@@ -281,7 +281,7 @@ describe("user is invited to category", () => {
         return { categoryId, bookmarkId };
     }
 
-    test("user can't get category", async () => {
+    test("user can get category", async () => {
         const { categoryId } = await createCategory();
 
         const response = await server.executeOperation({
@@ -297,9 +297,8 @@ describe("user is invited to category", () => {
             },
         }, mockRequest(userTokens[0]));
 
-        expect(response.data?.category).toBeNull()
-        expect(response.errors).toHaveLength(1)
-        expect(response.errors?.[0].extensions?.code).toEqual('FORBIDDEN')
+        expect(response.data?.category).not.toBeNull()
+        expect(response.errors).toBeUndefined()
     });
 
     test("user can't add bookmarks", async () => {

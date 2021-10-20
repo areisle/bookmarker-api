@@ -78,7 +78,7 @@ const Query: Resolvers['Query'] = {
         if (!context.user) {
             throw new AuthenticationError("Authentication required");
         }
-        await checkBelongsToCategory({ context, categoryId: args.id });
+        await checkBelongsToCategory({ context, categoryId: args.id, allowInactive: true });
 
         return prisma.category.findUnique({
             where: {
