@@ -451,7 +451,7 @@ describe("user is invited to category", () => {
     test("user can accept invitation to join category", async () => {
         const { categoryId } = await createCategory();
 
-        const response  = await server.executeOperation({
+        await server.executeOperation({
             query: gql`
                 mutation ($id: Int!) {
                     joinCategory(id: $id)

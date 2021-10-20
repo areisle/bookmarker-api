@@ -9,7 +9,7 @@ export const server = new ApolloServer({
     typeDefs,
     resolvers,
     context: async ({ req }): Promise<RequestContext> => {
-        const token = req.headers.authorization;
+        const token = req?.headers.authorization;
 
         let email = '';
 
@@ -23,16 +23,14 @@ export const server = new ApolloServer({
             ({ email } = authenticateToken(token));
         }
 
-        const user = await prisma.user.findUnique({
+        const user = await prisma.user.findFirst({
             where: {
                 email,
             },
         });
 
-        if (!user) throw new AuthenticationError("you must be logged in");
-
         // Add the user to the context
-        return { user: { id: user.id } };
+        return { user: user };
     },
 });
 
