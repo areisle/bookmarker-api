@@ -221,6 +221,7 @@ export type QueryBookmarksForUrlArgs = {
 
 
 export type QueryCategoriesArgs = {
+  activeOnly?: Maybe<Scalars['Boolean']>;
   skip?: Maybe<Scalars['Int']>;
   take?: Maybe<Scalars['Int']>;
 };

@@ -75,7 +75,7 @@ type Tag {
 
 type Query {
     users(categoryId: Int!): [UserCategory!]!
-    categories(take: Int, skip: Int): [Category!]!
+    categories(take: Int, skip: Int, activeOnly: Boolean): [Category!]!
     category(id: Int!): Category
     bookmarks(
         categoryId: Int!

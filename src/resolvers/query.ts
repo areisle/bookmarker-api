@@ -62,13 +62,14 @@ const Query: Resolvers['Query'] = {
         if (!context.user) {
             throw new AuthenticationError("Authentication required");
         }
-        const rest = strip(args);
+        const { activeOnly, ...rest } = strip(args);
         return prisma.category.findMany({
             ...rest,
             where: {
                 users: {
                     some: {
                         userId: context.user.id,
+                        ...(activeOnly ? { active: true } : {})
                     },
                 },
             },
