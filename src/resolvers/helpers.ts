@@ -24,11 +24,11 @@ interface CheckArgs {
     context: RequestContext;
     categoryId: number;
     requireAdmin?: boolean;
-    allowInactive?: boolean;
+    requireActive?: boolean;
 }
 
 const checkBelongsToCategory = async (args: CheckArgs) => {
-    const { context, categoryId, requireAdmin, allowInactive } = args;
+    const { context, categoryId, requireAdmin, requireActive } = args;
 
     if (!context.user) {
         throw new AuthenticationError("Authentication required");
@@ -44,7 +44,7 @@ const checkBelongsToCategory = async (args: CheckArgs) => {
 
     if (
         !user ||
-        (!allowInactive && !user.active) ||
+        (requireActive && !user.active) ||
         (requireAdmin && !user.admin)
     ) {
         throw new ForbiddenError("User does not belong to category.");

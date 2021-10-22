@@ -22,6 +22,7 @@ const Mutation: Resolvers["Mutation"] = {
         await checkBelongsToCategory({
             context,
             categoryId: bookmark.categoryId,
+            requireActive: true,
         });
 
         await prisma.tag.create({
@@ -51,6 +52,7 @@ const Mutation: Resolvers["Mutation"] = {
         await checkBelongsToCategory({
             context,
             categoryId: bookmark.categoryId,
+            requireActive: true,
         });
 
         return prisma.tag.deleteMany({
@@ -88,7 +90,6 @@ const Mutation: Resolvers["Mutation"] = {
         await checkBelongsToCategory({
             categoryId: args.id,
             context,
-            allowInactive: true
         })
 
         await prisma.userCategory.update({
@@ -137,6 +138,7 @@ const Mutation: Resolvers["Mutation"] = {
         await checkBelongsToCategory({
             context,
             categoryId: args.categoryId,
+            requireActive: true,
             requireAdmin: true,
         });
 
@@ -170,6 +172,7 @@ const Mutation: Resolvers["Mutation"] = {
         await checkBelongsToCategory({
             context,
             categoryId: args.categoryId,
+            requireActive: true,
             requireAdmin: true,
         });
 
@@ -191,6 +194,7 @@ const Mutation: Resolvers["Mutation"] = {
         await checkBelongsToCategory({
             context,
             categoryId,
+            requireActive: true,
         });
 
         return prisma.bookmark.create({
@@ -227,6 +231,7 @@ const Mutation: Resolvers["Mutation"] = {
         await checkBelongsToCategory({
             context,
             categoryId: bookmark.categoryId,
+            requireActive: true,
         });
 
         const tagsByOtherUsers = await prisma.tag.count({
@@ -270,6 +275,7 @@ const Mutation: Resolvers["Mutation"] = {
         await checkBelongsToCategory({
             context,
             categoryId: bookmark.categoryId,
+            requireActive: true,
         });
 
         // @ts-ignore
@@ -368,6 +374,7 @@ const Mutation: Resolvers["Mutation"] = {
             context,
             categoryId,
             requireAdmin: true,
+            requireActive: true,
         });
 
         try {
@@ -408,6 +415,7 @@ const Mutation: Resolvers["Mutation"] = {
             context,
             categoryId: alias?.categoryId,
             requireAdmin: true,
+            requireActive: true,
         });
 
         await prisma.categoryPatternAlias.delete({
@@ -439,6 +447,7 @@ const Mutation: Resolvers["Mutation"] = {
             context,
             categoryId: alias?.categoryId,
             requireAdmin: true,
+            requireActive: true,
         });
 
         try {
