@@ -17,6 +17,7 @@ type Category {
     users: [UserCategory!]!
     rules: [CategoryPatternAlias!]!
     isAdmin: Boolean!
+    isActive: Boolean!
 }
 
 type CategoryPatternAlias {

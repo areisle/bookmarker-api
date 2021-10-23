@@ -54,6 +54,17 @@ const resolvers: Resolvers = {
 
             return Boolean(count);
         },
+        isActive: async (parent, args, context, info) => {
+            const count = await prisma.userCategory.count({
+                where: {
+                    category: { id: parent.id },
+                    user: { id: context.user!.id },
+                    active: true,
+                },
+            });
+
+            return Boolean(count);
+        },
     },
     User: {},
     UserCategory: {

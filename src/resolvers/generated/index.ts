@@ -44,6 +44,7 @@ export type Category = {
   __typename?: 'Category';
   createdAt: Scalars['Date'];
   id: Scalars['Int'];
+  isActive: Scalars['Boolean'];
   isAdmin: Scalars['Boolean'];
   modifiedAt: Scalars['Date'];
   name: Scalars['String'];
@@ -440,6 +441,7 @@ export type BookmarkAliasResolvers<ContextType = RequestContext, ParentType exte
 export type CategoryResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['Category'] = ResolversParentTypes['Category']> = {
   createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  isActive?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   modifiedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
