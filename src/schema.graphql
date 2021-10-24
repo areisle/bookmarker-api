@@ -143,5 +143,4 @@ type Mutation {
         oldName: String!
         newName: String!
     ): Void
-    login(email: String!, password: String!): String!
 }

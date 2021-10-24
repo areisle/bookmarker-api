@@ -88,7 +88,6 @@ export type Mutation = {
   batchUpdateHostName?: Maybe<Scalars['Void']>;
   joinCategory?: Maybe<Scalars['Void']>;
   leaveCategory?: Maybe<Scalars['Void']>;
-  login: Scalars['String'];
   removeBookmark?: Maybe<Scalars['Void']>;
   removeCategoryPatternAlias?: Maybe<Scalars['Void']>;
   removeTag?: Maybe<Scalars['Void']>;
@@ -141,12 +140,6 @@ export type MutationJoinCategoryArgs = {
 
 export type MutationLeaveCategoryArgs = {
   id: Scalars['Int'];
-};
-
-
-export type MutationLoginArgs = {
-  email: Scalars['String'];
-  password: Scalars['String'];
 };
 
 
@@ -479,7 +472,6 @@ export type MutationResolvers<ContextType = RequestContext, ParentType extends R
   batchUpdateHostName?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationBatchUpdateHostNameArgs, 'categoryId' | 'newName' | 'oldName'>>;
   joinCategory?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationJoinCategoryArgs, 'id'>>;
   leaveCategory?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationLeaveCategoryArgs, 'id'>>;
-  login?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'email' | 'password'>>;
   removeBookmark?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationRemoveBookmarkArgs, 'id'>>;
   removeCategoryPatternAlias?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationRemoveCategoryPatternAliasArgs, 'id'>>;
   removeTag?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationRemoveTagArgs, 'bookmarkId' | 'name'>>;

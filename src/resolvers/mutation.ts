@@ -1,5 +1,4 @@
 import { AuthenticationError, UserInputError } from "apollo-server";
-import { login } from "../auth";
 import { prisma } from "../db";
 import { Resolvers } from "./generated";
 import { checkBelongsToCategory, strip } from "./helpers";
@@ -181,9 +180,6 @@ const Mutation: Resolvers["Mutation"] = {
                 id: args.id,
             },
         });
-    },
-    login: async (_, args, context) => {
-        return login(args.email, args.password);
     },
     addBookmark: async (_, args, context) => {
         const userId = context.user?.id;

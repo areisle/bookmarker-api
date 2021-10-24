@@ -3,7 +3,7 @@ import { typeDefs } from "./typeDefs";
 import { resolvers } from "./resolvers";
 import { prisma } from "./db";
 import { RequestContext } from "./resolvers/generated/utilities";
-import { authenticateToken } from "./auth";
+import { verifyToken } from "./firebase";
 
 export const server = new ApolloServer({
     typeDefs,
@@ -11,7 +11,7 @@ export const server = new ApolloServer({
     context: async ({ req }): Promise<RequestContext> => {
         const token = req?.headers.authorization;
 
-        let email = '';
+        let email: string | undefined = '';
 
         if (process.env.NODE_ENV === 'development' && process.env.AUTH_EMAIL) {
             email = process.env.AUTH_EMAIL;
@@ -20,13 +20,25 @@ export const server = new ApolloServer({
                 return { user: null };
             }
 
-            ({ email } = authenticateToken(token));
+            try {
+                ({ email } = await verifyToken(token));
+            } catch (e) {
+                throw new AuthenticationError(`Unable to authenticate user. ${(e as Error).message}`)
+            }
+
+            if (!email) {
+                return { user: null };
+            }
         }
 
-        const user = await prisma.user.findFirst({
+        const user = await prisma.user.upsert({
             where: {
                 email,
             },
+            create: {
+                email,
+            },
+            update: {},
         });
 
         // Add the user to the context

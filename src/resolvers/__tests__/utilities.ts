@@ -1,36 +1,17 @@
-import { createUser } from "../../auth";
 import { v4 as uuid } from "uuid";
 import { gql } from "apollo-server";
 import { server } from "../..";
 import { User } from ".prisma/client";
+import { prisma } from "../../db";
 
 const createTestUser = async () => {
     const email = `test-user-${uuid()}@email.ca`;
-    const user = await createUser(email, `password`);
+    const user = await prisma.user.create({
+        data: { email }
+    })
     return user;
 };
 
-const createTestUserAndLogin = async () => {
-    const user = await createTestUser();
-    let token = (
-        await server.executeOperation(
-            {
-                query: gql`
-                    mutation login($email: String!, $password: String!) {
-                        login(email: $email, password: $password)
-                    }
-                `,
-                variables: {
-                    email: user.email,
-                    password: `password`,
-                },
-            },
-            mockRequest()
-        )
-    ).data?.login;
-
-    return [user, token] as [User, string];
-};
 
 const mockRequest = (token: string = "") =>
     ({
@@ -41,4 +22,4 @@ const mockRequest = (token: string = "") =>
         },
     } as any);
 
-export { createTestUser, mockRequest, createTestUserAndLogin };
+export { createTestUser, mockRequest };
