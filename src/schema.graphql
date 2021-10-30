@@ -74,6 +74,18 @@ type Tag {
     createdByCurrentUser: Boolean!
 }
 
+type PaginationInfo {
+    count: Int!
+    total: Int!
+    skip: Int
+    take: Int
+}
+
+type BookmarksQueryResponse {
+    data: [Bookmark!]!
+    meta: PaginationInfo!
+}
+
 type Query {
     users(categoryId: Int!): [UserCategory!]!
     categories(take: Int, skip: Int, activeOnly: Boolean): [Category!]!
@@ -84,7 +96,7 @@ type Query {
         take: Int
         skip: Int
         orderBy: JSON
-    ): [Bookmark!]!
+    ): BookmarksQueryResponse!
     tags(categoryId: Int!, where: JSON, take: Int, skip: Int): [Tag!]!
     isBookmarked(url: String!): Boolean
     bookmarksForUrl(url: String!): [Bookmark!]!
