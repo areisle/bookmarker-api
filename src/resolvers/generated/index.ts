@@ -24,6 +24,7 @@ export type Bookmark = {
   categoryId: Scalars['Int'];
   createdAt: Scalars['Date'];
   description?: Maybe<Scalars['String']>;
+  groupedTags: Array<GroupedTag>;
   id: Scalars['Int'];
   modifiedAt: Scalars['Date'];
   tags: Array<Tag>;
@@ -88,6 +89,13 @@ export type CreateCategoryAliasContent = {
   canonical: Scalars['String'];
   match: Scalars['String'];
   origin: Scalars['String'];
+};
+
+export type GroupedTag = {
+  __typename?: 'GroupedTag';
+  createdByCurrentUser: Scalars['Int'];
+  name: Scalars['String'];
+  total: Scalars['Int'];
 };
 
 export type Mutation = {
@@ -392,6 +400,7 @@ export type ResolversTypes = {
   CreateBookmarkContent: CreateBookmarkContent;
   CreateCategoryAliasContent: CreateCategoryAliasContent;
   Date: ResolverTypeWrapper<Scalars['Date']>;
+  GroupedTag: ResolverTypeWrapper<GroupedTag>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   JSON: ResolverTypeWrapper<Scalars['JSON']>;
   Mutation: ResolverTypeWrapper<{}>;
@@ -419,6 +428,7 @@ export type ResolversParentTypes = {
   CreateBookmarkContent: CreateBookmarkContent;
   CreateCategoryAliasContent: CreateCategoryAliasContent;
   Date: Scalars['Date'];
+  GroupedTag: GroupedTag;
   Int: Scalars['Int'];
   JSON: Scalars['JSON'];
   Mutation: {};
@@ -440,6 +450,7 @@ export type BookmarkResolvers<ContextType = RequestContext, ParentType extends R
   categoryId?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  groupedTags?: Resolver<Array<ResolversTypes['GroupedTag']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   modifiedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   tags?: Resolver<Array<ResolversTypes['Tag']>, ParentType, ContextType>;
@@ -496,6 +507,13 @@ export type CategoryPatternAliasResolvers<ContextType = RequestContext, ParentTy
 export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
   name: 'Date';
 }
+
+export type GroupedTagResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['GroupedTag'] = ResolversParentTypes['GroupedTag']> = {
+  createdByCurrentUser?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
 
 export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['JSON'], any> {
   name: 'JSON';
@@ -582,6 +600,7 @@ export type Resolvers<ContextType = RequestContext> = {
   Category?: CategoryResolvers<ContextType>;
   CategoryPatternAlias?: CategoryPatternAliasResolvers<ContextType>;
   Date?: GraphQLScalarType;
+  GroupedTag?: GroupedTagResolvers<ContextType>;
   JSON?: GraphQLScalarType;
   Mutation?: MutationResolvers<ContextType>;
   PaginationInfo?: PaginationInfoResolvers<ContextType>;
