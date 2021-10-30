@@ -46,6 +46,12 @@ export type BookmarksQueryResponse = {
   meta: PaginationInfo;
 };
 
+export type CategoriesQueryResponse = {
+  __typename?: 'CategoriesQueryResponse';
+  data: Array<Category>;
+  meta: PaginationInfo;
+};
+
 export type Category = {
   __typename?: 'Category';
   createdAt: Scalars['Date'];
@@ -201,7 +207,7 @@ export type Query = {
   bookmark?: Maybe<Bookmark>;
   bookmarks: BookmarksQueryResponse;
   bookmarksForUrl: Array<Bookmark>;
-  categories: Array<Category>;
+  categories: CategoriesQueryResponse;
   category?: Maybe<Category>;
   isBookmarked?: Maybe<Scalars['Boolean']>;
   tags: Array<Tag>;
@@ -380,6 +386,7 @@ export type ResolversTypes = {
   BookmarkAlias: ResolverTypeWrapper<BookmarkAlias>;
   BookmarksQueryResponse: ResolverTypeWrapper<BookmarksQueryResponse>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
+  CategoriesQueryResponse: ResolverTypeWrapper<CategoriesQueryResponse>;
   Category: ResolverTypeWrapper<Category>;
   CategoryPatternAlias: ResolverTypeWrapper<CategoryPatternAlias>;
   CreateBookmarkContent: CreateBookmarkContent;
@@ -406,6 +413,7 @@ export type ResolversParentTypes = {
   BookmarkAlias: BookmarkAlias;
   BookmarksQueryResponse: BookmarksQueryResponse;
   Boolean: Scalars['Boolean'];
+  CategoriesQueryResponse: CategoriesQueryResponse;
   Category: Category;
   CategoryPatternAlias: CategoryPatternAlias;
   CreateBookmarkContent: CreateBookmarkContent;
@@ -451,6 +459,12 @@ export type BookmarkAliasResolvers<ContextType = RequestContext, ParentType exte
 
 export type BookmarksQueryResponseResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['BookmarksQueryResponse'] = ResolversParentTypes['BookmarksQueryResponse']> = {
   data?: Resolver<Array<ResolversTypes['Bookmark']>, ParentType, ContextType>;
+  meta?: Resolver<ResolversTypes['PaginationInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type CategoriesQueryResponseResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['CategoriesQueryResponse'] = ResolversParentTypes['CategoriesQueryResponse']> = {
+  data?: Resolver<Array<ResolversTypes['Category']>, ParentType, ContextType>;
   meta?: Resolver<ResolversTypes['PaginationInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -517,7 +531,7 @@ export type QueryResolvers<ContextType = RequestContext, ParentType extends Reso
   bookmark?: Resolver<Maybe<ResolversTypes['Bookmark']>, ParentType, ContextType, RequireFields<QueryBookmarkArgs, 'id'>>;
   bookmarks?: Resolver<ResolversTypes['BookmarksQueryResponse'], ParentType, ContextType, RequireFields<QueryBookmarksArgs, 'categoryId'>>;
   bookmarksForUrl?: Resolver<Array<ResolversTypes['Bookmark']>, ParentType, ContextType, RequireFields<QueryBookmarksForUrlArgs, 'url'>>;
-  categories?: Resolver<Array<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryCategoriesArgs, never>>;
+  categories?: Resolver<ResolversTypes['CategoriesQueryResponse'], ParentType, ContextType, RequireFields<QueryCategoriesArgs, never>>;
   category?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryCategoryArgs, 'id'>>;
   isBookmarked?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryIsBookmarkedArgs, 'url'>>;
   tags?: Resolver<Array<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<QueryTagsArgs, 'categoryId'>>;
@@ -564,6 +578,7 @@ export type Resolvers<ContextType = RequestContext> = {
   Bookmark?: BookmarkResolvers<ContextType>;
   BookmarkAlias?: BookmarkAliasResolvers<ContextType>;
   BookmarksQueryResponse?: BookmarksQueryResponseResolvers<ContextType>;
+  CategoriesQueryResponse?: CategoriesQueryResponseResolvers<ContextType>;
   Category?: CategoryResolvers<ContextType>;
   CategoryPatternAlias?: CategoryPatternAliasResolvers<ContextType>;
   Date?: GraphQLScalarType;

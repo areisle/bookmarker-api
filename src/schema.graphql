@@ -86,9 +86,14 @@ type BookmarksQueryResponse {
     meta: PaginationInfo!
 }
 
+type CategoriesQueryResponse {
+    data: [Category!]!
+    meta: PaginationInfo!
+}
+
 type Query {
     users(categoryId: Int!): [UserCategory!]!
-    categories(take: Int, skip: Int, activeOnly: Boolean): [Category!]!
+    categories(take: Int, skip: Int, activeOnly: Boolean): CategoriesQueryResponse!
     category(id: Int!): Category
     bookmarks(
         categoryId: Int!

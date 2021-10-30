@@ -1,6 +1,6 @@
 import { AuthenticationError } from "apollo-server";
 import { prisma } from "../db";
-import { Bookmark, Resolvers } from "./generated";
+import { Bookmark, Category, Resolvers } from "./generated";
 import { checkIsBookmarked, getBookmarkIdsForUrl } from "./isBookmarked";
 import { checkBelongsToCategory, strip } from "./helpers";
 
@@ -78,22 +78,39 @@ const Query: Resolvers['Query'] = {
             },
         });
     },
-    categories: (parent, args, context, info) => {
+    categories: async (parent, args, context, info) => {
         if (!context.user) {
             throw new AuthenticationError("Authentication required");
         }
-        const { activeOnly, ...rest } = strip(args);
-        return prisma.category.findMany({
-            ...rest,
-            where: {
-                users: {
-                    some: {
-                        userId: context.user.id,
-                        ...(activeOnly ? { active: true } : {})
-                    },
+        const { activeOnly, take = 100, skip = 0 } = strip(args);
+        const filters = {
+            users: {
+                some: {
+                    userId: context.user.id,
+                    ...(activeOnly ? { active: true } : {})
                 },
             },
+        };
+
+        const total = await prisma.category.count({
+            where: filters,
         });
+
+        const categories = await prisma.category.findMany({
+            take,
+            skip,
+            where: filters,
+        });
+
+        return {
+            data: categories as Category[],
+            meta: {
+                count: categories.length,
+                total,
+                skip,
+                take,
+            }
+        }
     },
     category: async (parent, args, context, info) => {
         if (!context.user) {
