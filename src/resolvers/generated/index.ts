@@ -40,6 +40,12 @@ export type BookmarkAlias = {
   url: Scalars['String'];
 };
 
+export type BookmarksQueryResponse = {
+  __typename?: 'BookmarksQueryResponse';
+  data: Array<Bookmark>;
+  meta: PaginationInfo;
+};
+
 export type Category = {
   __typename?: 'Category';
   createdAt: Scalars['Date'];
@@ -182,10 +188,18 @@ export type MutationUpdateCategoryPatternAliasArgs = {
   input: UpdateCategoryAliasContent;
 };
 
+export type PaginationInfo = {
+  __typename?: 'PaginationInfo';
+  count: Scalars['Int'];
+  skip?: Maybe<Scalars['Int']>;
+  take?: Maybe<Scalars['Int']>;
+  total: Scalars['Int'];
+};
+
 export type Query = {
   __typename?: 'Query';
   bookmark?: Maybe<Bookmark>;
-  bookmarks: Array<Bookmark>;
+  bookmarks: BookmarksQueryResponse;
   bookmarksForUrl: Array<Bookmark>;
   categories: Array<Category>;
   category?: Maybe<Category>;
@@ -364,6 +378,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversTypes = {
   Bookmark: ResolverTypeWrapper<Bookmark>;
   BookmarkAlias: ResolverTypeWrapper<BookmarkAlias>;
+  BookmarksQueryResponse: ResolverTypeWrapper<BookmarksQueryResponse>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Category: ResolverTypeWrapper<Category>;
   CategoryPatternAlias: ResolverTypeWrapper<CategoryPatternAlias>;
@@ -373,6 +388,7 @@ export type ResolversTypes = {
   Int: ResolverTypeWrapper<Scalars['Int']>;
   JSON: ResolverTypeWrapper<Scalars['JSON']>;
   Mutation: ResolverTypeWrapper<{}>;
+  PaginationInfo: ResolverTypeWrapper<PaginationInfo>;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']>;
   Tag: ResolverTypeWrapper<Tag>;
@@ -388,6 +404,7 @@ export type ResolversTypes = {
 export type ResolversParentTypes = {
   Bookmark: Bookmark;
   BookmarkAlias: BookmarkAlias;
+  BookmarksQueryResponse: BookmarksQueryResponse;
   Boolean: Scalars['Boolean'];
   Category: Category;
   CategoryPatternAlias: CategoryPatternAlias;
@@ -397,6 +414,7 @@ export type ResolversParentTypes = {
   Int: Scalars['Int'];
   JSON: Scalars['JSON'];
   Mutation: {};
+  PaginationInfo: PaginationInfo;
   Query: {};
   String: Scalars['String'];
   Tag: Tag;
@@ -428,6 +446,12 @@ export type BookmarkAliasResolvers<ContextType = RequestContext, ParentType exte
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   modifiedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   url?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type BookmarksQueryResponseResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['BookmarksQueryResponse'] = ResolversParentTypes['BookmarksQueryResponse']> = {
+  data?: Resolver<Array<ResolversTypes['Bookmark']>, ParentType, ContextType>;
+  meta?: Resolver<ResolversTypes['PaginationInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -481,9 +505,17 @@ export type MutationResolvers<ContextType = RequestContext, ParentType extends R
   updateCategoryPatternAlias?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationUpdateCategoryPatternAliasArgs, 'id' | 'input'>>;
 };
 
+export type PaginationInfoResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['PaginationInfo'] = ResolversParentTypes['PaginationInfo']> = {
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  skip?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  take?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type QueryResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   bookmark?: Resolver<Maybe<ResolversTypes['Bookmark']>, ParentType, ContextType, RequireFields<QueryBookmarkArgs, 'id'>>;
-  bookmarks?: Resolver<Array<ResolversTypes['Bookmark']>, ParentType, ContextType, RequireFields<QueryBookmarksArgs, 'categoryId'>>;
+  bookmarks?: Resolver<ResolversTypes['BookmarksQueryResponse'], ParentType, ContextType, RequireFields<QueryBookmarksArgs, 'categoryId'>>;
   bookmarksForUrl?: Resolver<Array<ResolversTypes['Bookmark']>, ParentType, ContextType, RequireFields<QueryBookmarksForUrlArgs, 'url'>>;
   categories?: Resolver<Array<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryCategoriesArgs, never>>;
   category?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryCategoryArgs, 'id'>>;
@@ -531,11 +563,13 @@ export interface VoidScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 export type Resolvers<ContextType = RequestContext> = {
   Bookmark?: BookmarkResolvers<ContextType>;
   BookmarkAlias?: BookmarkAliasResolvers<ContextType>;
+  BookmarksQueryResponse?: BookmarksQueryResponseResolvers<ContextType>;
   Category?: CategoryResolvers<ContextType>;
   CategoryPatternAlias?: CategoryPatternAliasResolvers<ContextType>;
   Date?: GraphQLScalarType;
   JSON?: GraphQLScalarType;
   Mutation?: MutationResolvers<ContextType>;
+  PaginationInfo?: PaginationInfoResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Tag?: TagResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
