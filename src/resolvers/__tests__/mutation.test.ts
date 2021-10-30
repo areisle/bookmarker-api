@@ -34,19 +34,23 @@ beforeAll(async () => {
     users = await Promise.all([1, 2].map(() => createTestUser()));
 });
 
-test("user can create new categories", async () => {
-    let resp = await server.executeOperation({
+const getCategoriesCount = async (email: string) => {
+    const response = await server.executeOperation({
         query: gql`
             query categories {
                 categories {
-                    id
-                    name
+                    meta {
+                        total
+                    }
                 }
             }
         `
-    }, mockRequest(users[0].email));
+    }, mockRequest(email));
+    return response.data?.categories.meta.total;
+}
 
-    const prevCategoriesCount = resp.data?.categories.length;
+test("user can create new categories", async () => {
+    const prevCategoriesCount = await getCategoriesCount(users[0].email);
 
     // add category
     await server.executeOperation({
@@ -63,18 +67,9 @@ test("user can create new categories", async () => {
         },
     }, mockRequest(users[0].email));
 
-    resp = await server.executeOperation({
-        query: gql`
-            query categories {
-                categories {
-                    id
-                    name
-                }
-            }
-        `
-    }, mockRequest(users[0].email));
+    const currentCategoriesCount = await getCategoriesCount(users[0].email);
 
-    expect(resp.data?.categories.length).toEqual(prevCategoriesCount + 1)
+    expect(currentCategoriesCount).toEqual(prevCategoriesCount + 1)
 });
 
 describe("user doesn't belong to category", () => {
@@ -423,18 +418,7 @@ describe("user is invited to category", () => {
     test("user can reject invitation to join category", async () => {
         const { categoryId } = await createCategory();
 
-        let resp = await server.executeOperation({
-            query: gql`
-                query categories {
-                    categories {
-                        id
-                        name
-                    }
-                }
-            `
-        }, mockRequest(users[0].email));
-
-        const prevCategoriesCount = resp.data?.categories.length;
+        const prevCategoriesCount = await getCategoriesCount(users[0].email);
 
         let response = await server.executeOperation({
             query: gql`
@@ -449,18 +433,9 @@ describe("user is invited to category", () => {
 
         expect(response.errors).toBeUndefined()
 
-        resp = await server.executeOperation({
-            query: gql`
-                query categories {
-                    categories {
-                        id
-                        name
-                    }
-                }
-            `
-        }, mockRequest(users[0].email));
+        const currentCategoriesCount = await getCategoriesCount(users[0].email);
 
-        expect(resp.data?.categories.length).toEqual(prevCategoriesCount - 1)
+        expect(currentCategoriesCount).toEqual(prevCategoriesCount - 1)
     });
 
     test("user can accept invitation to join category", async () => {
