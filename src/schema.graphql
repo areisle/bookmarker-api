@@ -51,6 +51,7 @@ type Bookmark {
     categoryId: Int!
     category: Category!
     aliases: [BookmarkAlias!]!
+    groupedTags: [GroupedTag!]!
 }
 
 type BookmarkAlias {
@@ -72,6 +73,12 @@ type Tag {
     createdBy: User!
     categoryId: Int!
     createdByCurrentUser: Boolean!
+}
+
+type GroupedTag {
+    createdByCurrentUser: Int!
+    name: String!
+    total: Int!
 }
 
 type PaginationInfo {

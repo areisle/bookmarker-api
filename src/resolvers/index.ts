@@ -13,6 +13,29 @@ const resolvers: Resolvers = {
                 },
             });
         },
+        groupedTags: async (parent, args, context, info) => {
+            type Result = {
+                total: number;
+                name: string;
+                createdByCurrentUser: number;
+            };
+
+            const userId = context.user?.id;
+
+            return prisma.$queryRaw<Result[]>`
+                SELECT
+                    name,
+                    COUNT(*) as total,
+                    SUM(CASE WHEN "createdById" = ${userId} THEN 1 ELSE 0 END) as "createdByCurrentUser"
+                FROM
+                    "Tag"
+                WHERE
+                    "bookmarkId" = ${parent.id}
+                GROUP BY
+                    name
+                ORDER BY name ASC;
+            `;
+        },
         category: async (parent, args, context, info) => {
             return (await prisma.category.findUnique({
                 where: {
