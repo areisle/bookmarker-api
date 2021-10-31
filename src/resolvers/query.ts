@@ -23,7 +23,10 @@ const Query: Resolvers['Query'] = {
         const bookmarks = await prisma.bookmark.findMany({
             take,
             skip,
-            orderBy,
+            orderBy: [
+                ...orderBy,
+                { id: 'desc' }
+            ],
             where: {
                 ...where,
                 categoryId,
