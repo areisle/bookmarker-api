@@ -55,6 +55,7 @@ export type CategoriesQueryResponse = {
 
 export type Category = {
   __typename?: 'Category';
+  bookmarksCount: Scalars['Int'];
   createdAt: Scalars['Date'];
   id: Scalars['Int'];
   isActive: Scalars['Boolean'];
@@ -481,6 +482,7 @@ export type CategoriesQueryResponseResolvers<ContextType = RequestContext, Paren
 };
 
 export type CategoryResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['Category'] = ResolversParentTypes['Category']> = {
+  bookmarksCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   isActive?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

@@ -88,6 +88,15 @@ const resolvers: Resolvers = {
 
             return Boolean(count);
         },
+        bookmarksCount: async (parent, args, context, info) => {
+            const count = await prisma.bookmark.count({
+                where: {
+                    category: { id: parent.id },
+                },
+            });
+
+            return count;
+        },
     },
     User: {},
     UserCategory: {
