@@ -1,99 +1,110 @@
-datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
-}
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
     provider        = "prisma-client-js"
-    previewFeatures = ["interactiveTransactions"]
+    previewFeatures = ["omitApi"]
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
 }
 
 model User {
-    id                    Int            @id @default(autoincrement())
-    createdAt             DateTime       @default(now())
-    modifiedAt            DateTime       @updatedAt
-    email                 String         @unique
-    categories            UserCategory[]
-    tags                  Tag[]
-    password              String?
-    resetToken            String?
-    resetRequestExpiresAt DateTime?
+    id             Int        @id @default(autoincrement())
+    createdAt      DateTime   @default(now()) @map("created_at")
+    lastModifiedAt DateTime   @updatedAt @map("last_modified_at")
+    email          String     @unique
+    admin          Boolean    @default(false)
+    dramasCreated  Drama[]    @relation("drama_created_by")
+    dramasModified Drama[]    @relation("drama_modified_by")
+    tags           Tag[]
+    linksCreated   Link[]
+    activity       Activity[]
+    watched        Watched[]
+
+    @@map("user")
 }
 
-model Category {
-    id              Int                    @id @default(autoincrement())
-    createdAt       DateTime               @default(now())
-    modifiedAt      DateTime               @updatedAt
-    name            String
-    users           UserCategory[]
-    bookmarks       Bookmark[]
-    tags            Tag[]
-    bookmarkAliases CategoryPatternAlias[]
+model Drama {
+    id               Int       @id @default(autoincrement())
+    createdAt        DateTime  @default(now()) @map("created_at")
+    createdById      Int       @map("created_by_id")
+    createdBy        User      @relation("drama_created_by", fields: [createdById], references: [id], onDelete: Cascade)
+    lastModifiedAt   DateTime  @updatedAt @map("last_modified_at")
+    lastModifiedById Int       @map("modified_by_id")
+    lastModifiedBy   User      @relation("drama_modified_by", fields: [lastModifiedById], references: [id])
+    title            String    @default("")
+    description      String    @default("")
+    startedAiringAt  DateTime? @map("started_airing_at")
+    finishedAiringAt DateTime? @map("finished_airing_at")
+    country          String?
+    episodeDuration  Int?      @map("episode_duration")
+    episodeCount     Int?      @map("episode_count")
+    // Upcoming, Ongoing, Completed,  Completed - Missing Subs
+    status           String    @default("Upcoming")
+    links            Link[]
+    tags             Tag[]
+    watched          Watched[]
+
+    @@map("drama")
 }
 
-model CategoryPatternAlias {
-    id         Int      @id @default(autoincrement())
-    createdAt  DateTime @default(now())
-    modifiedAt DateTime @updatedAt
-    categoryId Int
-    category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-    match      String
-    canonical  String
-    origin     String
+model Watched {
+    id             Int      @id @default(autoincrement())
+    createdAt      DateTime @default(now()) @map("created_at")
+    createdById    Int      @map("created_by_id")
+    createdBy      User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+    lastModifiedAt DateTime @updatedAt @map("last_modified_at")
+    dramaId        Int      @map("drama_id")
+    drama          Drama    @relation(fields: [dramaId], references: [id], onDelete: Cascade)
+    // maybe, yes, no, dropped
+    status         String?
+
+    @@unique([createdById, dramaId])
+    @@map("watched")
 }
 
-model UserCategory {
-    id         Int      @id @default(autoincrement())
-    createdAt  DateTime @default(now())
-    modifiedAt DateTime @updatedAt
-    userId     Int
-    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    categoryId Int
-    category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-    active     Boolean  @default(false)
-    admin      Boolean  @default(false)
-
-    @@unique([userId, categoryId])
-}
-
-model Bookmark {
-    id          Int             @id @default(autoincrement())
-    createdAt   DateTime        @default(now())
-    modifiedAt  DateTime        @updatedAt
+model Link {
+    id          Int      @id @default(autoincrement())
+    createdAt   DateTime @default(now()) @map("created_at")
+    createdById Int      @map("created_by_id")
+    createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+    dramaId     Int      @map("drama_id")
+    drama       Drama    @relation(fields: [dramaId], references: [id], onDelete: Cascade)
     url         String
-    title       String
-    description String?
-    categoryId  Int
-    category    Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-    tags        Tag[]
-    aliases     BookmarkAlias[]
 
-    @@index([url])
-}
-
-model BookmarkAlias {
-    id         Int      @id @default(autoincrement())
-    createdAt  DateTime @default(now())
-    url        String
-    bookmarkId Int
-    bookmark   Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
-
-    @@unique([bookmarkId, url])
+    @@map("link")
 }
 
 model Tag {
     id          Int      @id @default(autoincrement())
-    createdAt   DateTime @default(now())
+    createdAt   DateTime @default(now()) @map("created_at")
+    createdById Int      @map("created_by_id")
+    createdBy   User     @relation(fields: [createdById], references: [id])
+    dramaId     Int      @map("drama_id")
+    drama       Drama    @relation(fields: [dramaId], references: [id], onDelete: Cascade)
     name        String
-    // included for convenience. could be gotten from bookmakr
-    categoryId  Int
-    category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-    bookmarkId  Int
-    bookmark    Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
-    createdById Int
-    createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
 
+    @@unique([createdById, dramaId, name])
+    @@map("tag")
+}
 
-    @@unique([bookmarkId, name, createdById])
-    @@index([name])
+// to track history?
+// ex added link <>
+model Activity {
+    id          Int      @id @default(autoincrement())
+    createdAt   DateTime @default(now()) @map("created_at")
+    createdById Int      @map("created_by_id")
+    createdBy   User     @relation(fields: [createdById], references: [id])
+    // not a fks as we want to keep these even when we delete things
+    dramaId     Int?     @map("drama_id")
+
+    message String
+
+    @@map("activity")
 }

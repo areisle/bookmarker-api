@@ -1,130 +1,135 @@
-import { prisma } from "../db";
-import { Resolvers } from "./generated";
+import { db } from "../db";
+import { GroupedTag, Resolvers } from "./generated";
 import { Query } from "./query";
 import { Mutation } from "./mutation";
+import startCase from 'lodash.startcase';
+
+function createdBy(parent: { createdById: number }){
+    return db.user.findUniqueOrThrow({
+        where: {
+            id: parent.createdById,
+        },
+    });
+}
+
+const x = createdBy({ createdById: 3 });
 
 const resolvers: Resolvers = {
-    Bookmark: {
-        tags: async (parent, args, context, info) => {
-            return prisma.tag.findMany({
+    Activity: {
+        createdBy,
+        drama: async (parent) => {
+            if (parent.dramaId) {
+                return db.drama.findUnique({
+                    where: {
+                        id: parent.dramaId,
+                    },
+                });
+            }
+            return null;
+        },
+    },
+    Drama: {
+        tags: async (parent) => {
+            return db.tag.findMany({
                 orderBy: [{ name: "asc" }],
                 where: {
-                    bookmark: { id: parent.id },
+                    dramaId: parent.id,
                 },
             });
         },
-        groupedTags: async (parent, args, context, info) => {
-            type Result = {
-                total: number;
-                name: string;
-                createdByCurrentUser: number;
-            };
-
-            const userId = context.user?.id;
-
-            return prisma.$queryRaw<Result[]>`
-                SELECT
-                    name,
-                    COUNT(*) as total,
-                    SUM(CASE WHEN "createdById" = ${userId} THEN 1 ELSE 0 END) as "createdByCurrentUser"
-                FROM
-                    "Tag"
-                WHERE
-                    "bookmarkId" = ${parent.id}
-                GROUP BY
-                    name
-                ORDER BY name ASC;
-            `;
-        },
-        category: async (parent, args, context, info) => {
-            return (await prisma.category.findUnique({
+        links: async (parent) => {
+            return db.link.findMany({
                 where: {
-                    id: parent.categoryId,
+                    dramaId: parent.id,
                 },
-            }))!;
+            });
         },
-        aliases: async (parent, args, context, info) => {
-            return prisma.bookmarkAlias.findMany({
+        createdBy,
+        currentUserWatched: async (parent, args, context) => {
+            const watched = await db.watched.findUnique({
                 where: {
-                    bookmarkId: parent.id,
+                    createdById_dramaId: {
+                        createdById: context.user!.id,
+                        dramaId: parent.id,
+                    }
+                }
+            });
+            return watched?.status ?? null;
+        },
+        groupedTags: async (parent, args, context) => {
+            const tags = await db.tag.findMany({
+                orderBy: [{ name: "asc" }],
+                where: {
+                    dramaId: parent.id,
+                },
+            });
+
+            const groups: Record<string, GroupedTag> = {};
+
+            tags.forEach((tag) => {
+                groups[tag.name] = groups[tag.name] || { name: tag.name, count: 0, current: false }
+                groups[tag.name].count += 1;
+                if (tag.createdById === context.user!.id) {
+                    groups[tag.name].current = true;
+                }
+            });
+
+            const groupedTags = Object.values(groups).sort((a, b) => {
+                if (a.name > b.name) return 1;
+                return -1
+            });
+
+            return groupedTags
+        },
+        lastModifiedBy: async (parent) => {
+            return db.user.findUniqueOrThrow({
+                where: {
+                    id: parent.lastModifiedById,
+                },
+            });
+        },
+        watched: async (parent) => {
+            return db.watched.findMany({
+                where: {
+                    dramaId: parent.id,
                 },
             });
         },
     },
-    Category: {
-        rules: async (parent, args, context, info) => {
-            return prisma.categoryPatternAlias.findMany({
-                where: {
-                    category: { id: parent.id },
-                },
-            });
-        },
-        users: async (parent, args, context, info) => {
-            return prisma.userCategory.findMany({
-                where: {
-                    category: { id: parent.id },
-                },
-            });
-        },
-        isAdmin: async (parent, args, context, info) => {
-            const count = await prisma.userCategory.count({
-                where: {
-                    category: { id: parent.id },
-                    user: { id: context.user!.id },
-                    admin: true,
-                },
-            });
-
-            return Boolean(count);
-        },
-        isActive: async (parent, args, context, info) => {
-            const count = await prisma.userCategory.count({
-                where: {
-                    category: { id: parent.id },
-                    user: { id: context.user!.id },
-                    active: true,
-                },
-            });
-
-            return Boolean(count);
-        },
-        bookmarksCount: async (parent, args, context, info) => {
-            const count = await prisma.bookmark.count({
-                where: {
-                    category: { id: parent.id },
-                },
-            });
-
-            return count;
-        },
-    },
-    User: {},
-    UserCategory: {
-        user: async (parent) => {
-            const user = await prisma.userCategory
-                .findUnique({
-                    where: {
-                        id: parent.id,
-                    },
-                })
-                .user();
-            return user!;
+    Link: {
+        createdBy,
+        title: (parent, args, context) => {
+            let match = parent.url.match(/https:\/\/dramanice\..*\/drama\/(?<name>.*)-detail/);
+            if (match) {
+                return `${startCase(match.groups!.name)} (dramanice)`
+            }
+            match = parent.url.match(/https:\/\/mydramalist\.com\/\d+-(?<name>.*)/);
+            if (match) {
+                return `${startCase(match.groups!.name)} (mydramalist)`
+            }
+            return parent.url;
         },
     },
     Tag: {
-        createdBy: async (parent) => {
-            const user = await prisma.tag
-                .findUnique({
-                    where: {
-                        id: parent.id,
-                    },
-                })
-                .createdBy();
-            return user!;
-        },
+        createdBy,
         createdByCurrentUser: (parent, args, context) => {
             return parent.createdById === context.user!.id;
         },
+    },
+    User: {
+        createdBy: (parent) => {
+            if (parent.createdById) {
+                return db.user.findUnique({
+                    where: {
+                        id: parent.createdById,
+                    },
+                });
+            }
+            return null;
+        }
+    },
+    Watched: {
+        createdBy,
     },
     Query,
     Mutation,

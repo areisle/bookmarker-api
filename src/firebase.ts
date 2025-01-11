@@ -1,7 +1,6 @@
 import { initializeApp, cert } from 'firebase-admin/app';
 import { DecodedIdToken, getAuth } from 'firebase-admin/auth';
 
-credential:
 const app = initializeApp({
     credential: cert({
         projectId: process.env.FIREBASE_PROJECT_ID,

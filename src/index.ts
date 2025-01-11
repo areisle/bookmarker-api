@@ -1,7 +1,7 @@
 import { ApolloServer, AuthenticationError } from "apollo-server";
 import { typeDefs } from "./typeDefs";
 import { resolvers } from "./resolvers";
-import { prisma } from "./db";
+import { db } from "./db";
 import { RequestContext } from "./resolvers/generated/utilities";
 import { verifyToken } from "./firebase";
 
@@ -31,18 +31,14 @@ export const server = new ApolloServer({
             }
         }
 
-        const user = await prisma.user.upsert({
+        const user = await db.user.findUniqueOrThrow({
             where: {
                 email,
             },
-            create: {
-                email,
-            },
-            update: {},
         });
 
         // Add the user to the context
-        return { user: user };
+        return { user };
     },
 });
 

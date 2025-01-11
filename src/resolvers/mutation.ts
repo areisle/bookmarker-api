@@ -1,468 +1,295 @@
 import { AuthenticationError, UserInputError } from "apollo-server";
-import { prisma } from "../db";
-import { Resolvers } from "./generated";
-import { checkBelongsToCategory, strip } from "./helpers";
+import { db } from "../db";
+import without from 'lodash.without';
+import { CreateDramaContent, Resolvers } from "./generated";
+import { cleanText, COUNTRY, DRAMA_STATUS, getCanonicalUrl, isAnyBookmarked, strip, WATCHED_STATUS } from "./helpers";
+
+function cleanAndValidateDramaArgs({ id, input }: { id?: number; input: CreateDramaContent }) {
+    const args = strip(input);
+
+    if (!id || args.title !== undefined) {
+        args.title = cleanText(args.title ?? '');
+        if (!args.title) {
+            throw new UserInputError('\'title\' is required.')
+        }
+    }
+
+    if (!id || args.links !== undefined) {
+        args.links = (args.links ?? []).map((l) => l.trim()).filter(Boolean);
+
+        if (!args.links.length) {
+            throw new UserInputError('At least 1 link is required.')
+        }
+    }
+
+    if (!id || args.status !== undefined) {
+        if (!args.status?.trim()) {
+            throw new UserInputError('\'status\' is required.');
+        }
+
+        if (!Object.values<string | undefined>(DRAMA_STATUS).includes(args.status)) {
+            throw new UserInputError(`"${args.status}" is not a valid \'status\'. Must be one of ${Object.values(DRAMA_STATUS).map((s) => `"${s}"`).join(', ')}.`)
+        }
+    }
+
+    if (args.country !== undefined) {
+        if (!Object.values<string>(COUNTRY).includes(args.country)) {
+            throw new UserInputError(`"${args.country}" is not a valid \'country\'. Must be one of ${Object.values(COUNTRY).map((s) => `"${s}"`).join(', ')}.`)
+        }
+    }
+
+    if (typeof args.finishedAiringAt === 'string') {
+        args.finishedAiringAt = args.finishedAiringAt + 'T00:00:00.000Z';
+    }
+
+    if (typeof args.startedAiringAt === 'string') {
+        args.startedAiringAt = args.startedAiringAt + 'T00:00:00.000Z';
+    }
+
+    if (args.tags !== undefined) {
+        args.tags = (args.tags ?? []).map((name) => cleanText(name).toLowerCase()).filter(Boolean);
+    }
+
+    if (args.watched) {
+        if (!Object.values<string>(WATCHED_STATUS).includes(args.watched)) {
+            throw new UserInputError(`"${args.watched}" is not a valid \'watched\'. Must be one of ${Object.values(WATCHED_STATUS).map((s) => `"${s}"`).join(', ')}.`)
+        }
+    } else {
+        delete args.watched;
+    }
+
+    return args;
+}
 
 const Mutation: Resolvers["Mutation"] = {
-    addTag: async (parent, args, context) => {
-        if (!context.user) {
-            throw new AuthenticationError("Authentication required");
-        }
-        const bookmark = await prisma.bookmark.findUnique({
-            where: {
-                id: args.bookmarkId,
-            },
-        });
-
-        if (!bookmark) {
-            throw new UserInputError("Bookmark not found.");
+    addUser: async (_, args, context) => {
+        if (!context.user?.admin) {
+            throw new AuthenticationError("Admin required");
         }
 
-        await checkBelongsToCategory({
-            context,
-            categoryId: bookmark.categoryId,
-            requireActive: true,
+        const user = await db.user.create({
+            data: { email: args.email.toLowerCase() }
         });
 
-        await prisma.tag.create({
+        await db.activity.create({
             data: {
-                name: args.name,
-                category: { connect: { id: bookmark.categoryId } },
-                bookmark: { connect: { id: args.bookmarkId } },
-                createdBy: { connect: { id: context.user.id } },
-            },
-        });
-    },
-    removeTag: async (parent, args, context) => {
-        if (!context.user) {
-            throw new AuthenticationError("Authentication required");
-        }
-
-        const bookmark = await prisma.bookmark.findUnique({
-            where: {
-                id: args.bookmarkId,
-            },
-        });
-
-        if (!bookmark) {
-            throw new UserInputError("Bookmark not found.");
-        }
-
-        await checkBelongsToCategory({
-            context,
-            categoryId: bookmark.categoryId,
-            requireActive: true,
-        });
-
-        return prisma.tag.deleteMany({
-            where: {
-                bookmarkId: args.bookmarkId,
                 createdById: context.user.id,
-                name: args.name,
-            },
-        });
-    },
-    addCategory: async (_, args, context) => {
-        if (!context.user) {
-            throw new AuthenticationError("Authentication required");
-        }
-        return prisma.category.create({
-            data: {
-                name: args.name,
-                users: {
-                    create: [
-                        {
-                            user: { connect: { id: context.user.id } },
-                            active: true,
-                            admin: true,
-                        },
-                    ],
-                },
-            },
-        });
-    },
-    joinCategory: async (_, args, context) => {
-        if (!context.user) {
-            throw new AuthenticationError("Authentication required");
-        }
-
-        await checkBelongsToCategory({
-            categoryId: args.id,
-            context,
-        })
-
-        await prisma.userCategory.update({
-            where: {
-                userId_categoryId: {
-                    categoryId: args.id,
-                    userId: context.user.id,
-                }
-            },
-            data: {
-                active: true
+                message: `User ${user.email} added`,
             }
-        })
-    },
-    leaveCategory: async (_, args, context) => {
-        if (!context.user) {
-            throw new AuthenticationError("Authentication required");
-        }
-        const users = await prisma.userCategory.findMany({
-            where: {
-                categoryId: args.id,
-            },
         });
 
-        if (users.length === 1 && users[0].userId === context.user.id) {
-            // user is only user in category. delete entire category
-            await prisma.category.delete({
-                where: {
-                    id: args.id,
-                },
-            });
-        } else {
-            // delete user from category
-            await prisma.userCategory.deleteMany({
-                where: {
-                    userId: context.user.id,
-                    categoryId: args.id,
-                },
-            });
-        }
-    },
-    addUsers: async (_, args, context) => {
-        if (!context.user) {
-            throw new AuthenticationError("Authentication required");
-        }
-        await checkBelongsToCategory({
-            context,
-            categoryId: args.categoryId,
-            requireActive: true,
-            requireAdmin: true,
-        });
-
-        const promises = args.emails.map((email) => {
-            return prisma.userCategory.create({
-                data: {
-                    user: {
-                        connectOrCreate: {
-                            where: {
-                                email,
-                            },
-                            create: {
-                                email,
-                            },
-                        },
-                    },
-                    category: {
-                        connect: {
-                            id: args.categoryId,
-                        },
-                    },
-                },
-            });
-        });
-        await Promise.all(promises);
+        return user;
     },
     removeUser: async (_, args, context) => {
-        if (!context.user) {
-            throw new AuthenticationError("Authentication required");
+        if (!context.user?.admin) {
+            throw new AuthenticationError("Admin required");
         }
-        await checkBelongsToCategory({
-            context,
-            categoryId: args.categoryId,
-            requireActive: true,
-            requireAdmin: true,
+        await db.user.delete({
+            where: { email: args.email }
         });
 
-        await prisma.userCategory.delete({
-            where: {
-                id: args.id,
-            },
+        await db.activity.create({
+            data: {
+                createdById: context.user.id,
+                message: `User ${args.email} deleted`,
+            }
         });
     },
-    addBookmark: async (_, args, context) => {
-        const userId = context.user?.id;
-        if (!userId) {
-            throw new AuthenticationError("Authentication required");
+    addDrama: async (_, args, context) => {
+        if (!context.user) {
+            throw new AuthenticationError("Authentication required.");
         }
-        const { tags, categoryId, ...rest } = strip(args.input);
-        await checkBelongsToCategory({
-            context,
-            categoryId,
-            requireActive: true,
-        });
 
-        return prisma.bookmark.create({
+        let { tags = [], links = [], watched, ...rest } = cleanAndValidateDramaArgs(args);
+
+
+        // check links don't already exist
+        const exists = await isAnyBookmarked(links);
+        if (exists.length) {
+            throw new UserInputError(`url(s) ${links.join(',')} are already bookmarked.`);
+        }
+
+        const watchedMany: { status: string; createdById: number }[] = [];
+        if (rest.status !== DRAMA_STATUS.COMPLETED) {
+            // assume no one has watched it
+            const users = await db.user.findMany();
+            for (const user of users) {
+                watchedMany.push({
+                    status: WATCHED_STATUS.NO,
+                    createdById: user.id
+                })
+            }
+        } else if (watched) {
+            watchedMany.push({
+                status: watched,
+                createdById: context.user.id
+            });
+        }
+
+        const drama = await db.drama.create({
             data: {
                 ...rest,
-                categoryId,
+                createdById: context.user!.id,
+                lastModifiedById: context.user!.id,
+                links: {
+                    create: links.map((url) => ({
+                        url: getCanonicalUrl(url).canonical,
+                        createdById: context.user!.id,
+                    }))
+                },
                 tags: {
-                    createMany: {
-                        data: (tags ?? []).map((name) => ({
-                            name,
-                            createdById: userId,
-                            categoryId,
-                        })),
-                    },
+                    create: tags.map((name) => ({
+                        name,
+                        createdById: context.user!.id,
+                    })),
                 },
-            },
-        });
-    },
-    removeBookmark: async (_, args, context) => {
-        if (!context.user) {
-            throw new AuthenticationError("Authentication required");
-        }
-
-        const bookmark = await prisma.bookmark.findUnique({
-            where: {
-                id: args.id,
+                watched: {
+                    create: watchedMany
+                }
             },
         });
 
-        if (!bookmark) {
-            throw new UserInputError("Unable to find bookmark with given id.");
-        }
-
-        await checkBelongsToCategory({
-            context,
-            categoryId: bookmark.categoryId,
-            requireActive: true,
-        });
-
-        const tagsByOtherUsers = await prisma.tag.count({
-            where: {
-                bookmarkId: args.id,
-                createdById: {
-                    not: context.user.id,
-                },
-            },
-        });
-
-        if (tagsByOtherUsers) {
-            throw new UserInputError(
-                "Cannot remove bookmark that has tags written by another user."
-            );
-        }
-
-        await prisma.bookmark.delete({
-            where: {
-                id: args.id,
-            },
-        });
-    },
-    updateBookmark: async (_, args, context) => {
-        const userId = context.user?.id;
-
-        if (!userId) {
-            throw new AuthenticationError("Authentication required");
-        }
-
-        const bookmark = await prisma.bookmark.findUnique({
-            where: {
-                id: args.bookmarkId,
-            },
-        });
-
-        if (!bookmark) {
-            throw new UserInputError("Unable to find bookmark with given id.");
-        }
-
-        await checkBelongsToCategory({
-            context,
-            categoryId: bookmark.categoryId,
-            requireActive: true,
-        });
-
-        // @ts-ignore
-        await prisma.$transaction(async (transaction: typeof prisma) => {
-            let { tags, aliases, ...rest } = strip(args.input);
-
-            if (aliases) {
-                await transaction.bookmarkAlias.deleteMany({
-                    where: {
-                        bookmarkId: args.bookmarkId,
-                        url: {
-                            notIn: aliases,
-                        },
-                    },
-                });
-
-                // create missing aliases
-                await Promise.all(
-                    aliases.map((url) =>
-                        transaction.bookmarkAlias.upsert({
-                            where: {
-                                bookmarkId_url: {
-                                    bookmarkId: args.bookmarkId,
-                                    url,
-                                },
-                            },
-                            update: {},
-                            create: {
-                                url,
-                                bookmark: {
-                                    connect: { id: args.bookmarkId },
-                                },
-                            },
-                        })
-                    )
-                );
-            }
-
-            if (tags) {
-                tags = tags.map((tag) => tag.toLowerCase());
-                // delete removed tags
-                await prisma.tag.deleteMany({
-                    where: {
-                        bookmarkId: args.bookmarkId,
-                        createdById: userId,
-                        name: {
-                            notIn: tags,
-                        },
-                    },
-                });
-
-                // create added tags
-                await Promise.all(
-                    tags.map((name) =>
-                        transaction.tag.upsert({
-                            where: {
-                                bookmarkId_name_createdById: {
-                                    bookmarkId: args.bookmarkId,
-                                    createdById: userId,
-                                    name,
-                                },
-                            },
-                            update: {},
-                            create: {
-                                name,
-                                createdBy: {
-                                    connect: { id: userId },
-                                },
-                                bookmark: {
-                                    connect: { id: args.bookmarkId },
-                                },
-                                category: {
-                                    connect: { id: bookmark.categoryId },
-                                },
-                            },
-                        })
-                    )
-                );
-            }
-
-            await transaction.bookmark.update({
-                where: { id: args.bookmarkId },
-                data: rest,
-            });
-        });
-    },
-    addCategoryPatternAlias: async (_, args, context) => {
-        const userId = context.user?.id;
-        const { categoryId, input } = args;
-
-        if (!userId) {
-            throw new AuthenticationError("Authentication required");
-        }
-
-        await checkBelongsToCategory({
-            context,
-            categoryId,
-            requireAdmin: true,
-            requireActive: true,
-        });
-
-        try {
-            // test valid regex
-            new RegExp(`^${input.match}$`);
-        } catch {
-            throw new UserInputError(
-                `Unable to add pattern alias. "match" is invalid. ${input.match} is not a valid regular expression.`
-            );
-        }
-
-        await prisma.categoryPatternAlias.create({
+        await db.activity.create({
             data: {
-                category: { connect: { id: categoryId } },
-                ...input,
-            },
-        });
-    },
-    removeCategoryPatternAlias: async (_, args, context) => {
-        const userId = context.user?.id;
-        const { id } = args;
-
-        if (!userId) {
-            throw new AuthenticationError("Authentication required");
-        }
-
-        const alias = await prisma.categoryPatternAlias.findUnique({
-            where: { id: args.id },
-        });
-
-        if (!alias) {
-            throw new UserInputError(
-                `Unable to find pattern alias record with id: ${id}`
-            );
-        }
-
-        await checkBelongsToCategory({
-            context,
-            categoryId: alias?.categoryId,
-            requireAdmin: true,
-            requireActive: true,
-        });
-
-        await prisma.categoryPatternAlias.delete({
-            where: {
-                id: args.id,
-            },
-        });
-    },
-    updateCategoryPatternAlias: async (_, args, context) => {
-        const userId = context.user?.id;
-        const { id } = args;
-        const input = strip(args.input);
-
-        if (!userId) {
-            throw new AuthenticationError("Authentication required");
-        }
-
-        const alias = await prisma.categoryPatternAlias.findUnique({
-            where: { id: args.id },
-        });
-
-        if (!alias) {
-            throw new UserInputError(
-                `Unable to find pattern alias record with id: ${id}`
-            );
-        }
-
-        await checkBelongsToCategory({
-            context,
-            categoryId: alias?.categoryId,
-            requireAdmin: true,
-            requireActive: true,
-        });
-
-        try {
-            // test valid regex
-            if (input.match) {
-                new RegExp(`^${input.match}$`);
+                createdById: context.user!.id,
+                message: `Drama added`,
+                dramaId: drama.id,
             }
-        } catch {
-            throw new UserInputError(
-                `Unable to update pattern alias. "match" is invalid. ${input.match} is not a valid regular expression.`
-            );
+        });
+
+        return drama;
+    },
+    removeDrama: async (_, args, context) => {
+        if (!context.user) {
+            throw new AuthenticationError("Authentication required.");
         }
 
-        await prisma.categoryPatternAlias.update({
+        await db.drama.delete({
             where: {
                 id: args.id,
             },
-            data: input,
         });
+
+        await db.activity.create({
+            data: {
+                createdById: context.user.id,
+                message: `Drama deleted`,
+                dramaId: args.id,
+            }
+        });
+    },
+    updateDrama: async (_, args, context) => {
+        if (!context.user) {
+            throw new AuthenticationError("Authentication required.");
+        }
+
+        const input = cleanAndValidateDramaArgs(args);
+        let { links, tags, watched, ...rest } = input;
+        links = links?.map((link) => getCanonicalUrl(link).canonical)
+        // need to compare in order to get changes
+        const prev = await db.drama.findUniqueOrThrow({
+            where: { id: args.id },
+            include: { tags: true, watched: true, links: true }
+        });
+
+        const prevTags = prev.tags.filter((tag) => tag.createdById === context.user!.id).map((tag) => tag.name);
+        const prevLinks = prev.links.map(link => link.url);
+        const prevWatchedStatus = prev.watched.find((watch) => watch.createdById === context.user!.id)?.status;
+
+        let newTags = without(tags ?? [], ...prevTags);
+        let removedTags = without(prevTags, ...tags ?? []);
+        let newLinks = without(links ?? [], ...prevLinks);
+        let removedLinks = without(prevLinks, ...links ?? []);
+
+        // check links don't already exist
+        const exists = (await isAnyBookmarked(newLinks, [args.id])).filter((link) => link.dramaId !== prev.id);
+        if (exists.length) {
+            throw new UserInputError(`url(s) ${newLinks.join(',')} are already bookmarked.`);
+        }
+
+        const drama = await db.drama.update({
+            where: { id: args.id },
+            data: {
+                ...rest,
+                lastModifiedById: context.user.id,
+                tags: (newTags.length || removedTags.length) ? {
+                    deleteMany: {
+                        dramaId: args.id,
+                        createdById: context.user.id,
+                        name: { in: removedTags }
+                    },
+                    create: newTags.map((name) => ({ name, createdById: context.user!.id, })),
+                } : undefined,
+                links: (newLinks.length | removedLinks.length) ? {
+                    deleteMany: {
+                        dramaId: args.id,
+                        url: { in: removedLinks }
+                    },
+                    create: newLinks.map((url) => ({ url, createdById: context.user!.id, })),
+                } : undefined,
+                watched: watched ? {
+                    upsert: [{
+                        where: { createdById_dramaId: {
+                            createdById: context.user.id,
+                            dramaId: args.id,
+                        }},
+                        update: { status: watched },
+                        create: {
+                            status: watched,
+                            createdById: context.user.id,
+                        }
+                    }]
+                } : undefined,
+            }
+        });
+
+        let activityDescription = '';
+
+        const quote = (value: string | string[] | null | undefined) => (Array.isArray(value) ? value: [value ?? '']).map((v) => `"${v}"`).join(', ');
+
+        const addActivity = (...values: string[]) => {
+            const value = values.join(' ');
+            activityDescription += `\n${value}`;
+        }
+
+        for (const [key, value] of Object.entries(rest)) {
+            let prevValue = prev[key];
+            if (prevValue instanceof Date) {
+                prevValue = prevValue.toISOString()
+            }
+            if (prevValue !== value) {
+                addActivity(`Updated ${key} from`, quote(prevValue), 'to', quote(value));
+            }
+        }
+        if (watched !== undefined && watched !== prevWatchedStatus) {
+            addActivity(`Updated watched status from ${quote(prevWatchedStatus)} to ${quote(watched)}`);
+        }
+
+        if (newLinks.length) {
+            addActivity('Added link(s)', quote(newLinks));
+        }
+
+        if (removedLinks.length) {
+            addActivity('Removed link(s)', quote(removedLinks))
+        }
+
+        if (newTags.length) {
+            addActivity('Added tag(s)', quote(newTags))
+        }
+
+        if (removedTags.length) {
+            addActivity('Removed tag(s)', quote(removedTags));
+        }
+
+        await db.activity.create({
+            data: {
+                dramaId: drama.id,
+                createdById: context.user.id,
+                message: activityDescription || 'Updated. No Changes.',
+            }
+        });
+
+        return drama;
     },
 };
 

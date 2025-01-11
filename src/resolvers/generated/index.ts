@@ -17,190 +17,122 @@ export type Scalars = {
   Void: any;
 };
 
-export type Bookmark = {
-  __typename?: 'Bookmark';
-  aliases: Array<BookmarkAlias>;
-  category: Category;
-  categoryId: Scalars['Int'];
+export type Activity = {
+  __typename?: 'Activity';
   createdAt: Scalars['Date'];
+  createdBy: User;
+  createdById: Scalars['Int'];
+  drama?: Maybe<Drama>;
+  dramaId?: Maybe<Scalars['Int']>;
+  id: Scalars['Int'];
+  message: Scalars['String'];
+};
+
+export type ActivityQueryResponse = {
+  __typename?: 'ActivityQueryResponse';
+  data: Array<Activity>;
+  meta: PaginationInfo;
+};
+
+export type CreateDramaContent = {
+  country?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
+  episodeCount?: Maybe<Scalars['Int']>;
+  episodeDuration?: Maybe<Scalars['Int']>;
+  finishedAiringAt?: Maybe<Scalars['Date']>;
+  links?: Maybe<Array<Scalars['String']>>;
+  startedAiringAt?: Maybe<Scalars['Date']>;
+  status?: Maybe<Scalars['String']>;
+  tags?: Maybe<Array<Scalars['String']>>;
+  title?: Maybe<Scalars['String']>;
+  watched?: Maybe<Scalars['String']>;
+};
+
+export type CreateUserInput = {
+  admin?: Maybe<Scalars['Boolean']>;
+  email: Scalars['String'];
+};
+
+export type Drama = {
+  __typename?: 'Drama';
+  country?: Maybe<Scalars['String']>;
+  createdAt: Scalars['Date'];
+  createdBy: User;
+  createdById: Scalars['Int'];
+  currentUserWatched?: Maybe<Scalars['String']>;
+  description: Scalars['String'];
+  episodeCount?: Maybe<Scalars['Int']>;
+  episodeDuration?: Maybe<Scalars['Int']>;
+  finishedAiringAt?: Maybe<Scalars['Date']>;
   groupedTags: Array<GroupedTag>;
   id: Scalars['Int'];
-  modifiedAt: Scalars['Date'];
+  lastModifiedAt: Scalars['Date'];
+  lastModifiedBy: User;
+  lastModifiedById: Scalars['Int'];
+  links: Array<Link>;
+  startedAiringAt?: Maybe<Scalars['Date']>;
+  status: Scalars['String'];
   tags: Array<Tag>;
   title: Scalars['String'];
-  url: Scalars['String'];
+  watched: Array<Watched>;
 };
 
-export type BookmarkAlias = {
-  __typename?: 'BookmarkAlias';
-  bookmark: Bookmark;
-  createdAt: Scalars['Date'];
-  id: Scalars['Int'];
-  modifiedAt: Scalars['Date'];
-  url: Scalars['String'];
-};
-
-export type BookmarksQueryResponse = {
-  __typename?: 'BookmarksQueryResponse';
-  data: Array<Bookmark>;
+export type DramasQueryResponse = {
+  __typename?: 'DramasQueryResponse';
+  data: Array<Drama>;
   meta: PaginationInfo;
-};
-
-export type CategoriesQueryResponse = {
-  __typename?: 'CategoriesQueryResponse';
-  data: Array<Category>;
-  meta: PaginationInfo;
-};
-
-export type Category = {
-  __typename?: 'Category';
-  bookmarksCount: Scalars['Int'];
-  createdAt: Scalars['Date'];
-  id: Scalars['Int'];
-  isActive: Scalars['Boolean'];
-  isAdmin: Scalars['Boolean'];
-  modifiedAt: Scalars['Date'];
-  name: Scalars['String'];
-  rules: Array<CategoryPatternAlias>;
-  users: Array<UserCategory>;
-};
-
-export type CategoryPatternAlias = {
-  __typename?: 'CategoryPatternAlias';
-  canonical: Scalars['String'];
-  category: Category;
-  categoryId: Scalars['Int'];
-  createdAt: Scalars['Date'];
-  id: Scalars['Int'];
-  match: Scalars['String'];
-  modifiedAt: Scalars['Date'];
-  origin: Scalars['String'];
-};
-
-export type CreateBookmarkContent = {
-  categoryId: Scalars['Int'];
-  description?: Maybe<Scalars['String']>;
-  tags?: Maybe<Array<Scalars['String']>>;
-  title: Scalars['String'];
-  url: Scalars['String'];
-};
-
-export type CreateCategoryAliasContent = {
-  canonical: Scalars['String'];
-  match: Scalars['String'];
-  origin: Scalars['String'];
 };
 
 export type GroupedTag = {
   __typename?: 'GroupedTag';
-  createdByCurrentUser: Scalars['Int'];
+  count: Scalars['Int'];
+  current: Scalars['Boolean'];
   name: Scalars['String'];
-  total: Scalars['Int'];
+};
+
+export type Link = {
+  __typename?: 'Link';
+  createdAt: Scalars['Date'];
+  createdBy: User;
+  createdById: Scalars['Int'];
+  id: Scalars['Int'];
+  title: Scalars['String'];
+  url: Scalars['String'];
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
-  addBookmark?: Maybe<Bookmark>;
-  addCategory?: Maybe<Category>;
-  addCategoryPatternAlias?: Maybe<Scalars['Void']>;
-  addTag?: Maybe<Scalars['Void']>;
-  addUsers?: Maybe<Scalars['Void']>;
-  batchUpdateHostName?: Maybe<Scalars['Void']>;
-  joinCategory?: Maybe<Scalars['Void']>;
-  leaveCategory?: Maybe<Scalars['Void']>;
-  removeBookmark?: Maybe<Scalars['Void']>;
-  removeCategoryPatternAlias?: Maybe<Scalars['Void']>;
-  removeTag?: Maybe<Scalars['Void']>;
+  addDrama?: Maybe<Drama>;
+  addUser?: Maybe<User>;
+  removeDrama?: Maybe<Scalars['Void']>;
   removeUser?: Maybe<Scalars['Void']>;
-  updateBookmark?: Maybe<Scalars['Void']>;
-  updateCategory?: Maybe<Scalars['Void']>;
-  updateCategoryPatternAlias?: Maybe<Scalars['Void']>;
+  updateDrama?: Maybe<Scalars['Void']>;
 };
 
 
-export type MutationAddBookmarkArgs = {
-  input: CreateBookmarkContent;
+export type MutationAddDramaArgs = {
+  input: CreateDramaContent;
 };
 
 
-export type MutationAddCategoryArgs = {
-  name: Scalars['String'];
+export type MutationAddUserArgs = {
+  email: Scalars['String'];
 };
 
 
-export type MutationAddCategoryPatternAliasArgs = {
-  categoryId: Scalars['Int'];
-  input: CreateCategoryAliasContent;
-};
-
-
-export type MutationAddTagArgs = {
-  bookmarkId: Scalars['Int'];
-  name: Scalars['String'];
-};
-
-
-export type MutationAddUsersArgs = {
-  categoryId: Scalars['Int'];
-  emails: Array<Scalars['String']>;
-};
-
-
-export type MutationBatchUpdateHostNameArgs = {
-  categoryId: Scalars['Int'];
-  newName: Scalars['String'];
-  oldName: Scalars['String'];
-};
-
-
-export type MutationJoinCategoryArgs = {
+export type MutationRemoveDramaArgs = {
   id: Scalars['Int'];
-};
-
-
-export type MutationLeaveCategoryArgs = {
-  id: Scalars['Int'];
-};
-
-
-export type MutationRemoveBookmarkArgs = {
-  id: Scalars['Int'];
-};
-
-
-export type MutationRemoveCategoryPatternAliasArgs = {
-  id: Scalars['Int'];
-};
-
-
-export type MutationRemoveTagArgs = {
-  bookmarkId: Scalars['Int'];
-  name: Scalars['String'];
 };
 
 
 export type MutationRemoveUserArgs = {
-  categoryId: Scalars['Int'];
-  id: Scalars['Int'];
+  email: Scalars['String'];
 };
 
 
-export type MutationUpdateBookmarkArgs = {
-  bookmarkId: Scalars['Int'];
-  input: UpdateBookmarkContent;
-};
-
-
-export type MutationUpdateCategoryArgs = {
+export type MutationUpdateDramaArgs = {
   id: Scalars['Int'];
-  input?: Maybe<UpdateCategoryContent>;
-};
-
-
-export type MutationUpdateCategoryPatternAliasArgs = {
-  id: Scalars['Int'];
-  input: UpdateCategoryAliasContent;
+  input: CreateDramaContent;
 };
 
 export type PaginationInfo = {
@@ -213,24 +145,18 @@ export type PaginationInfo = {
 
 export type Query = {
   __typename?: 'Query';
-  bookmark?: Maybe<Bookmark>;
-  bookmarks: BookmarksQueryResponse;
-  bookmarksForUrl: Array<Bookmark>;
-  categories: CategoriesQueryResponse;
-  category?: Maybe<Category>;
-  isBookmarked?: Maybe<Scalars['Boolean']>;
+  activity: ActivityQueryResponse;
+  currentUser: User;
+  drama?: Maybe<Drama>;
+  dramas: DramasQueryResponse;
+  dump?: Maybe<Scalars['JSON']>;
+  isDramaBookmarked?: Maybe<Scalars['Int']>;
   tags: Array<Tag>;
-  users: Array<UserCategory>;
+  users: Array<User>;
 };
 
 
-export type QueryBookmarkArgs = {
-  id: Scalars['Int'];
-};
-
-
-export type QueryBookmarksArgs = {
-  categoryId: Scalars['Int'];
+export type QueryActivityArgs = {
   orderBy?: Maybe<Scalars['JSON']>;
   skip?: Maybe<Scalars['Int']>;
   take?: Maybe<Scalars['Int']>;
@@ -238,88 +164,63 @@ export type QueryBookmarksArgs = {
 };
 
 
-export type QueryBookmarksForUrlArgs = {
-  url: Scalars['String'];
-};
-
-
-export type QueryCategoriesArgs = {
-  activeOnly?: Maybe<Scalars['Boolean']>;
-  skip?: Maybe<Scalars['Int']>;
-  take?: Maybe<Scalars['Int']>;
-};
-
-
-export type QueryCategoryArgs = {
+export type QueryDramaArgs = {
   id: Scalars['Int'];
 };
 
 
-export type QueryIsBookmarkedArgs = {
-  url: Scalars['String'];
-};
-
-
-export type QueryTagsArgs = {
-  categoryId: Scalars['Int'];
+export type QueryDramasArgs = {
+  orderBy?: Maybe<Scalars['JSON']>;
   skip?: Maybe<Scalars['Int']>;
   take?: Maybe<Scalars['Int']>;
   where?: Maybe<Scalars['JSON']>;
 };
 
 
-export type QueryUsersArgs = {
-  categoryId: Scalars['Int'];
+export type QueryIsDramaBookmarkedArgs = {
+  url: Scalars['String'];
+};
+
+
+export type QueryTagsArgs = {
+  skip?: Maybe<Scalars['Int']>;
+  take?: Maybe<Scalars['Int']>;
+  where?: Maybe<Scalars['JSON']>;
 };
 
 export type Tag = {
   __typename?: 'Tag';
-  bookmark: Bookmark;
-  category: Category;
-  categoryId: Scalars['Int'];
   createdAt: Scalars['Date'];
   createdBy: User;
-  createdByCurrentUser: Scalars['Boolean'];
+  createdByCurrentUser?: Maybe<Scalars['Boolean']>;
   createdById: Scalars['Int'];
   id: Scalars['Int'];
-  modifiedAt: Scalars['Date'];
   name: Scalars['String'];
 };
 
-export type UpdateBookmarkContent = {
-  aliases?: Maybe<Array<Scalars['String']>>;
-  description?: Maybe<Scalars['String']>;
-  tags?: Maybe<Array<Scalars['String']>>;
-  title?: Maybe<Scalars['String']>;
-  url?: Maybe<Scalars['String']>;
-};
-
-export type UpdateCategoryAliasContent = {
-  canonical?: Maybe<Scalars['String']>;
-  match?: Maybe<Scalars['String']>;
-  origin?: Maybe<Scalars['String']>;
-};
-
-export type UpdateCategoryContent = {
-  title?: Maybe<Scalars['String']>;
+export type UpdateLinkContent = {
+  url: Scalars['String'];
 };
 
 export type User = {
   __typename?: 'User';
+  admin: Scalars['Boolean'];
   createdAt: Scalars['Date'];
+  createdBy?: Maybe<User>;
+  createdById?: Maybe<Scalars['Int']>;
   email: Scalars['String'];
   id: Scalars['Int'];
   modifiedAt: Scalars['Date'];
 };
 
-export type UserCategory = {
-  __typename?: 'UserCategory';
-  active: Scalars['Boolean'];
-  admin: Scalars['Boolean'];
+export type Watched = {
+  __typename?: 'Watched';
   createdAt: Scalars['Date'];
+  createdBy: User;
+  createdById: Scalars['Int'];
   id: Scalars['Int'];
-  modifiedAt: Scalars['Date'];
-  user: User;
+  lastModifiedAt: Scalars['Date'];
+  status?: Maybe<Scalars['String']>;
 };
 
 
@@ -391,118 +292,68 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
-  Bookmark: ResolverTypeWrapper<Bookmark>;
-  BookmarkAlias: ResolverTypeWrapper<BookmarkAlias>;
-  BookmarksQueryResponse: ResolverTypeWrapper<BookmarksQueryResponse>;
+  Activity: ResolverTypeWrapper<Activity>;
+  ActivityQueryResponse: ResolverTypeWrapper<ActivityQueryResponse>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
-  CategoriesQueryResponse: ResolverTypeWrapper<CategoriesQueryResponse>;
-  Category: ResolverTypeWrapper<Category>;
-  CategoryPatternAlias: ResolverTypeWrapper<CategoryPatternAlias>;
-  CreateBookmarkContent: CreateBookmarkContent;
-  CreateCategoryAliasContent: CreateCategoryAliasContent;
+  CreateDramaContent: CreateDramaContent;
+  CreateUserInput: CreateUserInput;
   Date: ResolverTypeWrapper<Scalars['Date']>;
+  Drama: ResolverTypeWrapper<Drama>;
+  DramasQueryResponse: ResolverTypeWrapper<DramasQueryResponse>;
   GroupedTag: ResolverTypeWrapper<GroupedTag>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   JSON: ResolverTypeWrapper<Scalars['JSON']>;
+  Link: ResolverTypeWrapper<Link>;
   Mutation: ResolverTypeWrapper<{}>;
   PaginationInfo: ResolverTypeWrapper<PaginationInfo>;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']>;
   Tag: ResolverTypeWrapper<Tag>;
-  UpdateBookmarkContent: UpdateBookmarkContent;
-  UpdateCategoryAliasContent: UpdateCategoryAliasContent;
-  UpdateCategoryContent: UpdateCategoryContent;
+  UpdateLinkContent: UpdateLinkContent;
   User: ResolverTypeWrapper<User>;
-  UserCategory: ResolverTypeWrapper<UserCategory>;
   Void: ResolverTypeWrapper<Scalars['Void']>;
+  Watched: ResolverTypeWrapper<Watched>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
-  Bookmark: Bookmark;
-  BookmarkAlias: BookmarkAlias;
-  BookmarksQueryResponse: BookmarksQueryResponse;
+  Activity: Activity;
+  ActivityQueryResponse: ActivityQueryResponse;
   Boolean: Scalars['Boolean'];
-  CategoriesQueryResponse: CategoriesQueryResponse;
-  Category: Category;
-  CategoryPatternAlias: CategoryPatternAlias;
-  CreateBookmarkContent: CreateBookmarkContent;
-  CreateCategoryAliasContent: CreateCategoryAliasContent;
+  CreateDramaContent: CreateDramaContent;
+  CreateUserInput: CreateUserInput;
   Date: Scalars['Date'];
+  Drama: Drama;
+  DramasQueryResponse: DramasQueryResponse;
   GroupedTag: GroupedTag;
   Int: Scalars['Int'];
   JSON: Scalars['JSON'];
+  Link: Link;
   Mutation: {};
   PaginationInfo: PaginationInfo;
   Query: {};
   String: Scalars['String'];
   Tag: Tag;
-  UpdateBookmarkContent: UpdateBookmarkContent;
-  UpdateCategoryAliasContent: UpdateCategoryAliasContent;
-  UpdateCategoryContent: UpdateCategoryContent;
+  UpdateLinkContent: UpdateLinkContent;
   User: User;
-  UserCategory: UserCategory;
   Void: Scalars['Void'];
+  Watched: Watched;
 };
 
-export type BookmarkResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['Bookmark'] = ResolversParentTypes['Bookmark']> = {
-  aliases?: Resolver<Array<ResolversTypes['BookmarkAlias']>, ParentType, ContextType>;
-  category?: Resolver<ResolversTypes['Category'], ParentType, ContextType>;
-  categoryId?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+export type ActivityResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['Activity'] = ResolversParentTypes['Activity']> = {
   createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  groupedTags?: Resolver<Array<ResolversTypes['GroupedTag']>, ParentType, ContextType>;
+  createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  createdById?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  drama?: Resolver<Maybe<ResolversTypes['Drama']>, ParentType, ContextType>;
+  dramaId?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  modifiedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  tags?: Resolver<Array<ResolversTypes['Tag']>, ParentType, ContextType>;
-  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  url?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type BookmarkAliasResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['BookmarkAlias'] = ResolversParentTypes['BookmarkAlias']> = {
-  bookmark?: Resolver<ResolversTypes['Bookmark'], ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  modifiedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  url?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type BookmarksQueryResponseResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['BookmarksQueryResponse'] = ResolversParentTypes['BookmarksQueryResponse']> = {
-  data?: Resolver<Array<ResolversTypes['Bookmark']>, ParentType, ContextType>;
+export type ActivityQueryResponseResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['ActivityQueryResponse'] = ResolversParentTypes['ActivityQueryResponse']> = {
+  data?: Resolver<Array<ResolversTypes['Activity']>, ParentType, ContextType>;
   meta?: Resolver<ResolversTypes['PaginationInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type CategoriesQueryResponseResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['CategoriesQueryResponse'] = ResolversParentTypes['CategoriesQueryResponse']> = {
-  data?: Resolver<Array<ResolversTypes['Category']>, ParentType, ContextType>;
-  meta?: Resolver<ResolversTypes['PaginationInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type CategoryResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['Category'] = ResolversParentTypes['Category']> = {
-  bookmarksCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  isActive?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  isAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  modifiedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  rules?: Resolver<Array<ResolversTypes['CategoryPatternAlias']>, ParentType, ContextType>;
-  users?: Resolver<Array<ResolversTypes['UserCategory']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type CategoryPatternAliasResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['CategoryPatternAlias'] = ResolversParentTypes['CategoryPatternAlias']> = {
-  canonical?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  category?: Resolver<ResolversTypes['Category'], ParentType, ContextType>;
-  categoryId?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  match?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  modifiedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  origin?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -510,10 +361,40 @@ export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
   name: 'Date';
 }
 
+export type DramaResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['Drama'] = ResolversParentTypes['Drama']> = {
+  country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  createdById?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  currentUserWatched?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  episodeCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  episodeDuration?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  finishedAiringAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  groupedTags?: Resolver<Array<ResolversTypes['GroupedTag']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  lastModifiedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  lastModifiedBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  lastModifiedById?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  links?: Resolver<Array<ResolversTypes['Link']>, ParentType, ContextType>;
+  startedAiringAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  tags?: Resolver<Array<ResolversTypes['Tag']>, ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  watched?: Resolver<Array<ResolversTypes['Watched']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type DramasQueryResponseResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['DramasQueryResponse'] = ResolversParentTypes['DramasQueryResponse']> = {
+  data?: Resolver<Array<ResolversTypes['Drama']>, ParentType, ContextType>;
+  meta?: Resolver<ResolversTypes['PaginationInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type GroupedTagResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['GroupedTag'] = ResolversParentTypes['GroupedTag']> = {
-  createdByCurrentUser?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  current?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -521,22 +402,22 @@ export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
   name: 'JSON';
 }
 
+export type LinkResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['Link'] = ResolversParentTypes['Link']> = {
+  createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  createdById?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  url?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type MutationResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  addBookmark?: Resolver<Maybe<ResolversTypes['Bookmark']>, ParentType, ContextType, RequireFields<MutationAddBookmarkArgs, 'input'>>;
-  addCategory?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<MutationAddCategoryArgs, 'name'>>;
-  addCategoryPatternAlias?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationAddCategoryPatternAliasArgs, 'categoryId' | 'input'>>;
-  addTag?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationAddTagArgs, 'bookmarkId' | 'name'>>;
-  addUsers?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationAddUsersArgs, 'categoryId' | 'emails'>>;
-  batchUpdateHostName?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationBatchUpdateHostNameArgs, 'categoryId' | 'newName' | 'oldName'>>;
-  joinCategory?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationJoinCategoryArgs, 'id'>>;
-  leaveCategory?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationLeaveCategoryArgs, 'id'>>;
-  removeBookmark?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationRemoveBookmarkArgs, 'id'>>;
-  removeCategoryPatternAlias?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationRemoveCategoryPatternAliasArgs, 'id'>>;
-  removeTag?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationRemoveTagArgs, 'bookmarkId' | 'name'>>;
-  removeUser?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationRemoveUserArgs, 'categoryId' | 'id'>>;
-  updateBookmark?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationUpdateBookmarkArgs, 'bookmarkId' | 'input'>>;
-  updateCategory?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationUpdateCategoryArgs, 'id'>>;
-  updateCategoryPatternAlias?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationUpdateCategoryPatternAliasArgs, 'id' | 'input'>>;
+  addDrama?: Resolver<Maybe<ResolversTypes['Drama']>, ParentType, ContextType, RequireFields<MutationAddDramaArgs, 'input'>>;
+  addUser?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddUserArgs, 'email'>>;
+  removeDrama?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationRemoveDramaArgs, 'id'>>;
+  removeUser?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationRemoveUserArgs, 'email'>>;
+  updateDrama?: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationUpdateDramaArgs, 'id' | 'input'>>;
 };
 
 export type PaginationInfoResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['PaginationInfo'] = ResolversParentTypes['PaginationInfo']> = {
@@ -548,45 +429,34 @@ export type PaginationInfoResolvers<ContextType = RequestContext, ParentType ext
 };
 
 export type QueryResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
-  bookmark?: Resolver<Maybe<ResolversTypes['Bookmark']>, ParentType, ContextType, RequireFields<QueryBookmarkArgs, 'id'>>;
-  bookmarks?: Resolver<ResolversTypes['BookmarksQueryResponse'], ParentType, ContextType, RequireFields<QueryBookmarksArgs, 'categoryId'>>;
-  bookmarksForUrl?: Resolver<Array<ResolversTypes['Bookmark']>, ParentType, ContextType, RequireFields<QueryBookmarksForUrlArgs, 'url'>>;
-  categories?: Resolver<ResolversTypes['CategoriesQueryResponse'], ParentType, ContextType, RequireFields<QueryCategoriesArgs, never>>;
-  category?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryCategoryArgs, 'id'>>;
-  isBookmarked?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryIsBookmarkedArgs, 'url'>>;
-  tags?: Resolver<Array<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<QueryTagsArgs, 'categoryId'>>;
-  users?: Resolver<Array<ResolversTypes['UserCategory']>, ParentType, ContextType, RequireFields<QueryUsersArgs, 'categoryId'>>;
+  activity?: Resolver<ResolversTypes['ActivityQueryResponse'], ParentType, ContextType, RequireFields<QueryActivityArgs, never>>;
+  currentUser?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  drama?: Resolver<Maybe<ResolversTypes['Drama']>, ParentType, ContextType, RequireFields<QueryDramaArgs, 'id'>>;
+  dramas?: Resolver<ResolversTypes['DramasQueryResponse'], ParentType, ContextType, RequireFields<QueryDramasArgs, never>>;
+  dump?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
+  isDramaBookmarked?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<QueryIsDramaBookmarkedArgs, 'url'>>;
+  tags?: Resolver<Array<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<QueryTagsArgs, never>>;
+  users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
 };
 
 export type TagResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['Tag'] = ResolversParentTypes['Tag']> = {
-  bookmark?: Resolver<ResolversTypes['Bookmark'], ParentType, ContextType>;
-  category?: Resolver<ResolversTypes['Category'], ParentType, ContextType>;
-  categoryId?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  createdByCurrentUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  createdByCurrentUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   createdById?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  modifiedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type UserResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+  admin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  createdBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  createdById?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   modifiedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type UserCategoryResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['UserCategory'] = ResolversParentTypes['UserCategory']> = {
-  active?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  admin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  modifiedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -594,22 +464,31 @@ export interface VoidScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
   name: 'Void';
 }
 
+export type WatchedResolvers<ContextType = RequestContext, ParentType extends ResolversParentTypes['Watched'] = ResolversParentTypes['Watched']> = {
+  createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  createdById?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  lastModifiedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type Resolvers<ContextType = RequestContext> = {
-  Bookmark?: BookmarkResolvers<ContextType>;
-  BookmarkAlias?: BookmarkAliasResolvers<ContextType>;
-  BookmarksQueryResponse?: BookmarksQueryResponseResolvers<ContextType>;
-  CategoriesQueryResponse?: CategoriesQueryResponseResolvers<ContextType>;
-  Category?: CategoryResolvers<ContextType>;
-  CategoryPatternAlias?: CategoryPatternAliasResolvers<ContextType>;
+  Activity?: ActivityResolvers<ContextType>;
+  ActivityQueryResponse?: ActivityQueryResponseResolvers<ContextType>;
   Date?: GraphQLScalarType;
+  Drama?: DramaResolvers<ContextType>;
+  DramasQueryResponse?: DramasQueryResponseResolvers<ContextType>;
   GroupedTag?: GroupedTagResolvers<ContextType>;
   JSON?: GraphQLScalarType;
+  Link?: LinkResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   PaginationInfo?: PaginationInfoResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Tag?: TagResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
-  UserCategory?: UserCategoryResolvers<ContextType>;
   Void?: GraphQLScalarType;
+  Watched?: WatchedResolvers<ContextType>;
 };
 
