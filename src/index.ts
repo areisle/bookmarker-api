@@ -1,34 +1,17 @@
-import { ApolloServer, AuthenticationError } from "apollo-server";
+import { ApolloServer } from "apollo-server";
 import { typeDefs } from "./typeDefs";
 import { resolvers } from "./resolvers";
 import { db } from "./db";
 import { RequestContext } from "./resolvers/generated/utilities";
-import { verifyToken } from "./firebase";
 
 export const server = new ApolloServer({
     typeDefs,
     resolvers,
     context: async ({ req }): Promise<RequestContext> => {
-        const token = req?.headers.authorization;
-
-        let email: string | undefined = '';
+        let email: string | undefined = req?.headers.authorization;
 
         if (process.env.NODE_ENV === 'development' && process.env.AUTH_EMAIL) {
             email = process.env.AUTH_EMAIL;
-        } else {
-            if (!token) {
-                return { user: null };
-            }
-
-            try {
-                ({ email } = await verifyToken(token));
-            } catch (e) {
-                throw new AuthenticationError(`Unable to authenticate user. ${(e as Error).message}`)
-            }
-
-            if (!email) {
-                return { user: null };
-            }
         }
 
         const user = await db.user.findUniqueOrThrow({
